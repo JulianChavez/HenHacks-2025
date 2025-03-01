@@ -42,7 +42,7 @@ export default function ReportUpload() {
 
     return (
         <div className="upload-container">
-            <h1 className="text-xl font-bold mb-4">Report Upload</h1>
+            <h1 className="text-xl font-bold mb-4">Bloodwork Upload</h1>
             
             {!isUploaded ? (
                 <form onSubmit={handleSubmit} className="space-y-4">

@@ -3,11 +3,12 @@ import React from "react";
 
 export default function ReportList() {
     const [reports, setReports] = React.useState([
-        { ReportName: "Report 1", ReportDate: "2024-01-01", ReportNumber: "1234"}
+        { ReportName: "Report 1", ReportDate: "2024-01-01", ReportNumber: "1234"},
+        { ReportName: "Report 2", ReportDate: "2025-02-02", ReportNumber: "5678"}
     ]);
     return (
         <div className="report-list">
-            <h2 className="text-xl font-bold mb-4 text-center">Reports List</h2>
+            <h2 className="text-xl font-bold mb-4 text-center">Bloodwork List</h2>
             <div className="space-y-4">
                 {reports.map((report, index) => (
                     <div key={index} className="p-4 border rounded-md shadow-sm">
