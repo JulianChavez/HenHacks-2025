@@ -22,3 +22,11 @@
   width: 100%;
   max-width: 600px;
 }
+
+.report-header{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-left: 85px;
+
+}

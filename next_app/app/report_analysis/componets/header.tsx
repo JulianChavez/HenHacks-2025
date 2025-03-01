@@ -5,7 +5,7 @@ export default function Header() {
     return (
         <div>
             <div id = "header" className="rounded-box">
-                <div id = "subsection">
+                <div id = "subsection" className="report-header">
                     <p> Welcome, User</p>
                 </div>
                 <div id ="Logout-section">
