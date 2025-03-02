@@ -39,7 +39,7 @@ export default function Home() {
       </div>
 
       <div id="main-section" className="relative text-center mt-14 z-10">
-        <h1 className="text-6xl font-bold mb-3">Welcome to BloodQwuirk!<br/></h1>
+        <h1 className="text-6xl font-bold mb-3 font-extrabold" style={{ color: "maroon" }}>Welcome to BloodQwuirk!<br/></h1>
         <h3 className="text-2xl font-bold">Understanding your blood work, made simple</h3>
         <div className="bg-gray-400 p-1 max-w-3xl mx-auto rounded-xl shadow-md mt-20 z-8">
           <p className="text-lg">Your AI-powered blood analysis tool. Easily upload your blood test results and receive a detailed report with clear, AI-driven insights.</p>
