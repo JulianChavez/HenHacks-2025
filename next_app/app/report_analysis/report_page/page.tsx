@@ -1,9 +1,10 @@
 'use client';
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Report } from "../componets/ReportList";
-import Header from "../componets/header";
+import { Report } from "../components/ReportList";
+import Header from "../components/header";
 import Link from "next/link";
+import ChatBot from "../components/ChatBot";
 
 // Local storage key (must match the one in the main page)
 const REPORTS_STORAGE_KEY = 'bloodwork_reports';
@@ -68,6 +69,7 @@ const parseAnalysisResults = (analysisResults: string | undefined) => {
                         let referenceRange = parts[3] || 'N/A';
                         let status = 'Normal';
                         let notes = '';
+                        let percentDeviation = 0;
                         
                         // Check if there are notes (usually after the reference range)
                         if (parts.length > 4) {
@@ -82,10 +84,40 @@ const parseAnalysisResults = (analysisResults: string | undefined) => {
                                 const [_, prefix, min, max] = rangeMatch;
                                 const numResult = parseFloat(result);
                                 if (!isNaN(numResult)) {
-                                    if (numResult < parseFloat(min)) {
-                                        status = 'Low';
-                                    } else if (numResult > parseFloat(max)) {
-                                        status = 'High';
+                                    const minVal = parseFloat(min);
+                                    const maxVal = parseFloat(max);
+                                    const rangeMiddle = (minVal + maxVal) / 2;
+                                    const rangeSize = maxVal - minVal;
+                                    
+                                    if (numResult < minVal) {
+                                        // Calculate percentage below minimum
+                                        percentDeviation = ((minVal - numResult) / rangeSize) * 100;
+                                        
+                                        if (percentDeviation <= 5) {
+                                            status = 'Normal';
+                                        } else if (percentDeviation <= 10) {
+                                            status = 'SlightConcern';
+                                        } else {
+                                            status = 'HighConcern';
+                                        }
+                                    } else if (numResult > maxVal) {
+                                        // Calculate percentage above maximum
+                                        percentDeviation = ((numResult - maxVal) / rangeSize) * 100;
+                                        
+                                        if (percentDeviation <= 5) {
+                                            status = 'Normal';
+                                        } else if (percentDeviation <= 10) {
+                                            status = 'SlightConcern';
+                                        } else {
+                                            status = 'HighConcern';
+                                        }
+                                    } else if (numResult === minVal || numResult === maxVal) {
+                                        // Special handling for values exactly at the limits
+                                        status = 'Normal';
+                                        percentDeviation = 0;
+                                    } else {
+                                        status = 'Normal';
+                                        percentDeviation = 0;
                                     }
                                 }
                             } else if (referenceRange.includes('<')) {
@@ -94,8 +126,22 @@ const parseAnalysisResults = (analysisResults: string | undefined) => {
                                 if (maxMatch) {
                                     const numResult = parseFloat(result);
                                     const maxValue = parseFloat(maxMatch[1]);
-                                    if (!isNaN(numResult) && !isNaN(maxValue) && numResult > maxValue) {
-                                        status = 'High';
+                                    if (!isNaN(numResult) && !isNaN(maxValue)) {
+                                        if (numResult > maxValue) {
+                                            // Calculate percentage above maximum
+                                            percentDeviation = ((numResult - maxValue) / maxValue) * 100;
+                                            
+                                            if (percentDeviation <= 5) {
+                                                status = 'Normal';
+                                            } else if (percentDeviation <= 10) {
+                                                status = 'SlightConcern';
+                                            } else {
+                                                status = 'HighConcern';
+                                            }
+                                        } else {
+                                            status = 'Normal';
+                                            percentDeviation = 0;
+                                        }
                                     }
                                 }
                             }
@@ -105,11 +151,59 @@ const parseAnalysisResults = (analysisResults: string | undefined) => {
                         if (notes) {
                             const lowKeywords = ['low', 'below', 'deficient', 'insufficient'];
                             const highKeywords = ['high', 'elevated', 'excessive', 'above'];
+                            const slightKeywords = ['slightly', 'borderline', 'marginal'];
+                            const upperLimitKeywords = ['upper limit of normal', 'at the upper limit', 'at upper limit'];
+                            const lowerLimitKeywords = ['lower limit of normal', 'at the lower limit', 'at lower limit'];
                             
-                            if (lowKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
-                                status = 'Low';
-                            } else if (highKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
-                                status = 'High';
+                            // Only use keyword analysis if we couldn't parse the reference range
+                            // or if the value is already outside the reference range
+                            if (!referenceRange || referenceRange === 'N/A' || status !== 'Normal') {
+                                if (lowKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                                    // Check if it's a slight concern
+                                    if (slightKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                                        status = 'SlightConcern';
+                                    } else {
+                                        status = 'HighConcern';
+                                    }
+                                } else if (highKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                                    // Check if it's a slight concern
+                                    if (slightKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                                        status = 'SlightConcern';
+                                    } else {
+                                        status = 'HighConcern';
+                                    }
+                                }
+                            }
+                            
+                            // Special handling for values at the exact upper or lower limit
+                            // These are technically within range but might need attention
+                            if (status === 'Normal') {
+                                // Check if the value is exactly at the upper or lower limit of the reference range
+                                if (referenceRange && referenceRange !== 'N/A') {
+                                    const rangeMatch = referenceRange.match(/([<>]?)\s*(\d+\.?\d*)\s*-\s*(\d+\.?\d*)/);
+                                    if (rangeMatch) {
+                                        const [_, prefix, min, max] = rangeMatch;
+                                        const numResult = parseFloat(result);
+                                        const minVal = parseFloat(min);
+                                        const maxVal = parseFloat(max);
+                                        
+                                        // If the value is exactly at the upper limit and notes mention "upper limit"
+                                        if (numResult === maxVal && upperLimitKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                                            status = 'SlightConcern';
+                                        }
+                                        // If the value is exactly at the lower limit and notes mention "lower limit"
+                                        else if (numResult === minVal && lowerLimitKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                                            status = 'SlightConcern';
+                                        }
+                                    }
+                                } else {
+                                    // If we can't parse the reference range, just check the keywords
+                                    if (upperLimitKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                                        status = 'SlightConcern';
+                                    } else if (lowerLimitKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                                        status = 'SlightConcern';
+                                    }
+                                }
                             }
                         }
                         
@@ -119,7 +213,8 @@ const parseAnalysisResults = (analysisResults: string | undefined) => {
                             units,
                             referenceRange,
                             status,
-                            notes
+                            notes,
+                            percentDeviation
                         });
                     }
                 }
@@ -169,15 +264,64 @@ const parseMarkdownTable = (tableText: string): any[] => {
                 
                 // Determine status based on notes and reference range
                 let status = 'Normal';
+                let percentDeviation = 0;
                 
                 // Check notes for status indicators
                 const lowKeywords = ['low', 'below', 'deficient', 'insufficient'];
                 const highKeywords = ['high', 'elevated', 'excessive', 'above', 'borderline high'];
+                const slightKeywords = ['slightly', 'borderline', 'marginal'];
+                const upperLimitKeywords = ['upper limit of normal', 'at the upper limit', 'at upper limit'];
+                const lowerLimitKeywords = ['lower limit of normal', 'at the lower limit', 'at lower limit'];
                 
-                if (lowKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
-                    status = 'Low';
-                } else if (highKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
-                    status = 'High';
+                // Only use keyword analysis if we couldn't parse the reference range
+                // or if the value is already outside the reference range
+                if (!referenceRange || referenceRange === 'N/A' || status !== 'Normal') {
+                    if (lowKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                        // Check if it's a slight concern
+                        if (slightKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                            status = 'SlightConcern';
+                        } else {
+                            status = 'HighConcern';
+                        }
+                    } else if (highKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                        // Check if it's a slight concern
+                        if (slightKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                            status = 'SlightConcern';
+                        } else {
+                            status = 'HighConcern';
+                        }
+                    }
+                }
+                
+                // Special handling for values at the exact upper or lower limit
+                // These are technically within range but might need attention
+                if (status === 'Normal') {
+                    // Check if the value is exactly at the upper or lower limit of the reference range
+                    if (referenceRange && referenceRange !== 'N/A') {
+                        const rangeMatch = referenceRange.match(/([<>]?)\s*(\d+\.?\d*)\s*-\s*(\d+\.?\d*)/);
+                        if (rangeMatch) {
+                            const [_, prefix, min, max] = rangeMatch;
+                            const numResult = parseFloat(result);
+                            const minVal = parseFloat(min);
+                            const maxVal = parseFloat(max);
+                            
+                            // If the value is exactly at the upper limit and notes mention "upper limit"
+                            if (numResult === maxVal && upperLimitKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                                status = 'SlightConcern';
+                            }
+                            // If the value is exactly at the lower limit and notes mention "lower limit"
+                            else if (numResult === minVal && lowerLimitKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                                status = 'SlightConcern';
+                            }
+                        }
+                    } else {
+                        // If we can't parse the reference range, just check the keywords
+                        if (upperLimitKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                            status = 'SlightConcern';
+                        } else if (lowerLimitKeywords.some(keyword => notes.toLowerCase().includes(keyword))) {
+                            status = 'SlightConcern';
+                        }
+                    }
                 }
                 
                 // Also check against reference range if status is still Normal
@@ -187,10 +331,39 @@ const parseMarkdownTable = (tableText: string): any[] => {
                         const [_, prefix, min, max] = rangeMatch;
                         const numResult = parseFloat(result);
                         if (!isNaN(numResult)) {
-                            if (numResult < parseFloat(min)) {
-                                status = 'Low';
-                            } else if (numResult > parseFloat(max)) {
-                                status = 'High';
+                            const minVal = parseFloat(min);
+                            const maxVal = parseFloat(max);
+                            const rangeSize = maxVal - minVal;
+                            
+                            if (numResult < minVal) {
+                                // Calculate percentage below minimum
+                                percentDeviation = ((minVal - numResult) / rangeSize) * 100;
+                                
+                                if (percentDeviation <= 5) {
+                                    status = 'Normal';
+                                } else if (percentDeviation <= 10) {
+                                    status = 'SlightConcern';
+                                } else {
+                                    status = 'HighConcern';
+                                }
+                            } else if (numResult > maxVal) {
+                                // Calculate percentage above maximum
+                                percentDeviation = ((numResult - maxVal) / rangeSize) * 100;
+                                
+                                if (percentDeviation <= 5) {
+                                    status = 'Normal';
+                                } else if (percentDeviation <= 10) {
+                                    status = 'SlightConcern';
+                                } else {
+                                    status = 'HighConcern';
+                                }
+                            } else if (numResult === minVal || numResult === maxVal) {
+                                // Special handling for values exactly at the limits
+                                status = 'Normal';
+                                percentDeviation = 0;
+                            } else {
+                                status = 'Normal';
+                                percentDeviation = 0;
                             }
                         }
                     } else if (referenceRange.includes('<')) {
@@ -199,8 +372,22 @@ const parseMarkdownTable = (tableText: string): any[] => {
                         if (maxMatch) {
                             const numResult = parseFloat(result);
                             const maxValue = parseFloat(maxMatch[1]);
-                            if (!isNaN(numResult) && !isNaN(maxValue) && numResult > maxValue) {
-                                status = 'High';
+                            if (!isNaN(numResult) && !isNaN(maxValue)) {
+                                if (numResult > maxValue) {
+                                    // Calculate percentage above maximum
+                                    percentDeviation = ((numResult - maxValue) / maxValue) * 100;
+                                    
+                                    if (percentDeviation <= 5) {
+                                        status = 'Normal';
+                                    } else if (percentDeviation <= 10) {
+                                        status = 'SlightConcern';
+                                    } else {
+                                        status = 'HighConcern';
+                                    }
+                                } else {
+                                    status = 'Normal';
+                                    percentDeviation = 0;
+                                }
                             }
                         }
                     }
@@ -212,7 +399,8 @@ const parseMarkdownTable = (tableText: string): any[] => {
                     units,
                     referenceRange,
                     status,
-                    notes
+                    notes,
+                    percentDeviation
                 });
             }
         }
@@ -235,6 +423,7 @@ export default function ReportPage() {
         recommendations: string;
         results: any[];
     }>({ summary: "", recommendations: "", results: [] });
+    const [isChatOpen, setIsChatOpen] = useState(false);
     
     useEffect(() => {
         const loadReport = async () => {
@@ -439,8 +628,8 @@ export default function ReportPage() {
                                             {/* Test name and circular result indicator */}
                                             <div className="flex items-center gap-4 min-w-[250px]">
                                                 <div className={`flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center ${
-                                                    result.status === 'High' ? 'bg-red-100 text-red-700 border-2 border-red-300' : 
-                                                    result.status === 'Low' ? 'bg-orange-100 text-orange-700 border-2 border-orange-300' : 
+                                                    result.status === 'HighConcern' ? 'bg-red-100 text-red-700 border-2 border-red-300' : 
+                                                    result.status === 'SlightConcern' ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-300' : 
                                                     'bg-green-100 text-green-700 border-2 border-green-300'
                                                 }`}>
                                                     <div className="text-center">
@@ -457,14 +646,23 @@ export default function ReportPage() {
                                             {/* Status indicator */}
                                             <div className="flex-grow">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                    result.status === 'High' ? 'bg-red-100 text-red-800' : 
-                                                    result.status === 'Low' ? 'bg-orange-100 text-orange-800' : 
+                                                    result.status === 'HighConcern' ? 'bg-red-100 text-red-800' : 
+                                                    result.status === 'SlightConcern' ? 'bg-yellow-100 text-yellow-800' : 
                                                     'bg-green-100 text-green-800'
                                                 }`}>
-                                                    {result.status}
+                                                    {result.status === 'HighConcern' ? 'High Concern' : 
+                                                     result.status === 'SlightConcern' ? 'Slight Concern' : 
+                                                     'Normal'}
                                                 </span>
                                                 
-                                                {/* Notes about the result - this would need to be added to your data model */}
+                                                {/* Percentage deviation */}
+                                                {result.percentDeviation > 0 && (
+                                                    <span className="ml-2 text-xs text-gray-500">
+                                                        ({result.percentDeviation.toFixed(1)}% deviation)
+                                                    </span>
+                                                )}
+                                                
+                                                {/* Notes about the result */}
                                                 {result.notes && (
                                                     <p className="mt-1 text-sm text-gray-600">{result.notes}</p>
                                                 )}
@@ -489,6 +687,24 @@ export default function ReportPage() {
                     </div>
                 </div>
             </div>
+            
+            {/* Chat button */}
+            <button
+                onClick={() => setIsChatOpen(true)}
+                className="fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-40"
+                aria-label="Open chat"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+            </button>
+            
+            {/* Chat component */}
+            <ChatBot 
+                testAnalysis={report?.analysisResults || ''} 
+                isOpen={isChatOpen} 
+                onClose={() => setIsChatOpen(false)} 
+            />
         </div>
     );
 }

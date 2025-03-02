@@ -16,6 +16,14 @@ def debug_print(*args, **kwargs):
 if len(sys.argv) > 1:
     # Get the PDF path from command line arguments
     pdf_path = sys.argv[1]
+    # Check if user information is provided
+    user_info = None
+    if len(sys.argv) > 2:
+        try:
+            user_info = json.loads(sys.argv[2])
+            debug_print(f"User info received: {user_info}")
+        except Exception as e:
+            debug_print(f"Error parsing user info: {e}")
     standalone_mode = True
 else:
     standalone_mode = False
@@ -43,8 +51,16 @@ def upload_file():
         csv_path = pdf_path.replace('.pdf', '.csv')
         pdf_to_csv(pdf_path, csv_path)
         
+        # Get user information if provided
+        user_info = None
+        if 'user_info' in request.form:
+            try:
+                user_info = json.loads(request.form['user_info'])
+            except Exception as e:
+                debug_print(f"Error parsing user info: {e}")
+        
         # Analyze the data
-        result = analyze_bloodwork(csv_path)
+        result = analyze_bloodwork(csv_path, user_info)
         json_string = json.dumps(result)
         debug_print(json_string)
         return jsonify({"message": result}), 200
@@ -205,7 +221,7 @@ def pdf_to_csv(pdf_path, output_csv):
 os.environ["GOOGLE_API_KEY"] = "AIzaSyDYrGLAYyEAqJRyjGvdfxf6Kd3-5bJGvSY"
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-def analyze_bloodwork(file_path):
+def analyze_bloodwork(file_path, user_info=None):
     try:
         # Read the CSV file
         df = pd.read_csv(file_path)
@@ -232,6 +248,23 @@ def analyze_bloodwork(file_path):
         else:
             # Use the simple format
             bloodwork_text = df.to_string(index=False)
+        
+        # Format user information if available
+        user_info_text = ""
+        if user_info and isinstance(user_info, dict):
+            debug_print(f"Including user info in prompt: {user_info}")
+            
+            if 'age' in user_info and user_info['age']:
+                user_info_text += f"Patient Age: {user_info['age']} years\n"
+            
+            if 'gender' in user_info and user_info['gender']:
+                user_info_text += f"Patient Gender: {user_info['gender']}\n"
+            
+            if 'diseases' in user_info and user_info['diseases']:
+                user_info_text += f"Patient Medical History: {user_info['diseases']}\n"
+            
+            if user_info_text:
+                user_info_text = "Patient Information:\n" + user_info_text + "\n"
 
         prompt = f"""
         You are an AI-powered medical assistant analyzing blood test results.
@@ -243,7 +276,9 @@ def analyze_bloodwork(file_path):
         Result
         Reference Range
         Notes (explanation, significance, and possible concerns)
-        If age, gender, or health conditions are provided, tailor your recommendations accordingly.
+        If age, gender, or health conditions are provided, tailor your recommendations accordingly. In your summary, if anything corresponds to the patient's medical history, make sure to mention it.
+        
+        {user_info_text}
         Blood Test Results:
         {bloodwork_text}
 
@@ -264,7 +299,7 @@ def analyze_bloodwork(file_path):
 
         Test Name	| Result	| Reference Range	| Notes
         
-        Ensure your response is clear, concise, and medically informative. Exclude any ** or boldness in your response. If age, gender, or health conditions are provided, tailor your recommendations accordingly. Avoid making definitive diagnoses and always suggest consulting a healthcare provider if needed.
+        Ensure your response is clear, concise, and medically informative. If age, gender, or health conditions are provided, tailor your recommendations accordingly. Avoid making definitive diagnoses and always suggest consulting a healthcare provider if needed.
         """
 
         model = genai.GenerativeModel("gemini-1.5-pro")
@@ -288,7 +323,7 @@ if standalone_mode:
         pdf_to_csv(pdf_path, csv_path)
         
         # Analyze the data
-        result = analyze_bloodwork(csv_path)
+        result = analyze_bloodwork(csv_path, user_info)
         
         # Print ONLY the JSON result to stdout for the Node.js process to capture
         # Everything else goes to stderr

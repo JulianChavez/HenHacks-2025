@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
     const reportName = formData.get('reportName') as string;
     const reportDate = formData.get('reportDate') as string;
     const reportNumber = formData.get('reportNumber') as string;
+    const clientId = formData.get('client_id') as string;
     
     if (!file) {
       return NextResponse.json(
@@ -38,9 +39,42 @@ export async function POST(request: NextRequest) {
     
     // Call the Python script to analyze the PDF
     try {
-      // Pass the PDF path to the Python script
-      console.log(`Executing Python script with path: ${path}`);
-      const { stdout, stderr } = await execPromise(`python ${join(process.cwd(), 'bloodanalysis.py')} ${path}`);
+      // Get user information if client ID is provided
+      let userInfoParam = '';
+      if (clientId) {
+        try {
+          // Import the database connection
+          const { connectToDB } = await import('@/app/lib/db');
+          const pool = await connectToDB();
+          
+          // Query the database for user information
+          const [userInfoRows] = await pool.query(
+            'SELECT age, gender, diseases FROM userinformation WHERE client_id = ?',
+            [clientId]
+          );
+          
+          const userInfo = userInfoRows as any[];
+          if (userInfo.length > 0) {
+            // Create a JSON string with user information
+            const userInfoObj = {
+              age: userInfo[0].age,
+              gender: userInfo[0].gender,
+              diseases: userInfo[0].diseases
+            };
+            
+            // Escape the JSON string for command line
+            userInfoParam = ` '${JSON.stringify(userInfoObj).replace(/'/g, "\\'")}'`;
+            console.log(`User info param: ${userInfoParam}`);
+          }
+        } catch (dbError) {
+          console.error('Error fetching user information:', dbError);
+          // Continue without user info if there's an error
+        }
+      }
+      
+      // Pass the PDF path and user info to the Python script
+      console.log(`Executing Python script with path: ${path} and user info: ${userInfoParam}`);
+      const { stdout, stderr } = await execPromise(`python ${join(process.cwd(), 'bloodanalysis.py')} ${path}${userInfoParam}`);
       
       if (stderr) {
         // Log stderr but don't treat it as an error - it now contains our debug info
