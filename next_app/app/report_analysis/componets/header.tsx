@@ -27,9 +27,9 @@ export default function Header() {
 
     return (
         <div>
-            <div id="header" className="rounded-box flex justify-between items-center p-8 bg-gray-400 mb-10 shadow-sm">
+            <div id="header" className="rounded-box flex justify-between items-center p-8 bg-gray-200 mb-10 shadow-sm">
                 <div id="subsection" className="report-header">
-                    <p className="font-bold text-gray-800">
+                    <p className="font-bold text-gray-800 text-xl">
                         {isLoggedIn ? `Welcome, ${username}!` : "Welcome, Guest!"}
                     </p>
                 </div>

@@ -411,6 +411,46 @@ const parseMarkdownTable = (tableText: string): any[] => {
     return results;
 };
 
+// Helper function to format text with proper bold styling
+const formatTextWithBold = (text: string, testNames: string[] = []) => {
+    // Replace **text** with <strong>text</strong>
+    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Highlight test names in the text
+    if (testNames.length > 0) {
+        // Sort test names by length (descending) to avoid partial matches
+        const sortedTestNames = [...testNames].sort((a, b) => b.length - a.length);
+        
+        // Create a regex pattern that matches whole words only
+        for (const testName of sortedTestNames) {
+            const escapedTestName = testName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`\\b(${escapedTestName})\\b`, 'gi');
+            formattedText = formattedText.replace(regex, '<strong class="text-blue-700">$1</strong>');
+        }
+    }
+    
+    // Format numbered lists (e.g., "1. **Title:**" format)
+    formattedText = formattedText.replace(/(\d+\.\s+)(<strong>.*?<\/strong>:)/g, '<div class="flex items-start mb-3"><span class="font-bold mr-2">$1</span><span class="font-bold">$2</span></div><div class="ml-6 mb-4">');
+    
+    // Close the div for each list item
+    formattedText = formattedText.replace(/(<\/div><div class="ml-6 mb-4">.*?)(\d+\.\s+<strong>|$)/g, '$1</div>$2');
+    
+    // Handle line breaks
+    formattedText = formattedText.replace(/\n/g, '<br/>');
+    
+    return formattedText;
+};
+
+// Function to handle text selection and send to chatbot
+const handleTextSelection = (setChatInput: (text: string) => void, setIsChatOpen: (isOpen: boolean) => void) => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().trim().length > 0) {
+        const selectedText = selection.toString().trim();
+        setChatInput(selectedText);
+        setIsChatOpen(true);
+    }
+};
+
 export default function ReportPage() {
     const searchParams = useSearchParams();
     const reportNumber = searchParams.get('reportNumber');
@@ -424,6 +464,7 @@ export default function ReportPage() {
         results: any[];
     }>({ summary: "", recommendations: "", results: [] });
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [chatInput, setChatInput] = useState('');
     
     useEffect(() => {
         const loadReport = async () => {
@@ -554,7 +595,7 @@ export default function ReportPage() {
     }
     
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 font-georgia">
             <Header />
             
             <div className="mb-4">
@@ -595,32 +636,71 @@ export default function ReportPage() {
                 <div className="p-6">
                     <div className="space-y-6">
                         {/* Summary Row */}
-                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                            <h2 className="text-xl font-bold mb-4 text-blue-700 border-b pb-2">Summary</h2>
+                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <h2 className="text-xl font-bold mb-4 text-blue-700 border-b pb-2 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Summary
+                            </h2>
                             <div className="prose max-w-none">
                                 {parsedResults.summary ? (
-                                    <p className="text-gray-800">{parsedResults.summary}</p>
+                                    <div 
+                                        className="text-gray-800 leading-relaxed selectable-text font-georgia"
+                                        onMouseUp={() => handleTextSelection(setChatInput, setIsChatOpen)}
+                                        dangerouslySetInnerHTML={{ 
+                                            __html: formatTextWithBold(
+                                                parsedResults.summary, 
+                                                parsedResults.results.map(r => r.test)
+                                            ) 
+                                        }}
+                                    />
                                 ) : (
-                                    <p className="text-gray-500 italic">No summary available</p>
+                                    <p className="text-gray-500 italic font-georgia">No summary available</p>
                                 )}
+                                <div className="mt-2 text-xs text-gray-500 italic">
+                                    Tip: Select any text to ask the AI about it
+                                </div>
                             </div>
                         </div>
                         
                         {/* Recommendations Row */}
-                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                            <h2 className="text-xl font-bold mb-4 text-green-700 border-b pb-2">Recommendations</h2>
+                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <h2 className="text-xl font-bold mb-4 text-green-700 border-b pb-2 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                Recommendations
+                            </h2>
                             <div className="prose max-w-none">
                                 {parsedResults.recommendations ? (
-                                    <div className="text-gray-800 whitespace-pre-line">{parsedResults.recommendations}</div>
+                                    <div 
+                                        className="text-gray-800 space-y-4 selectable-text font-georgia"
+                                        onMouseUp={() => handleTextSelection(setChatInput, setIsChatOpen)}
+                                        dangerouslySetInnerHTML={{ 
+                                            __html: formatTextWithBold(
+                                                parsedResults.recommendations.replace(/\n/g, '<br/>'),
+                                                parsedResults.results.map(r => r.test)
+                                            ) 
+                                        }}
+                                    />
                                 ) : (
-                                    <p className="text-gray-500 italic">No recommendations available</p>
+                                    <p className="text-gray-500 italic font-georgia">No recommendations available</p>
                                 )}
+                                <div className="mt-2 text-xs text-gray-500 italic">
+                                    Tip: Select any text to ask the AI about it
+                                </div>
                             </div>
                         </div>
                         
                         {/* Results Row */}
-                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                            <h2 className="text-xl font-bold mb-4 text-purple-700 border-b pb-2">Test Results</h2>
+                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <h2 className="text-xl font-bold mb-4 text-purple-700 border-b pb-2 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                Test Results
+                            </h2>
                             {parsedResults.results.length > 0 ? (
                                 <div className="space-y-4">
                                     {parsedResults.results.map((result, index) => (
@@ -638,8 +718,8 @@ export default function ReportPage() {
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-semibold text-gray-800">{result.test}</h3>
-                                                    <p className="text-sm text-gray-500">Reference: {result.referenceRange}</p>
+                                                    <h3 className="font-semibold text-gray-800 font-georgia">{result.test}</h3>
+                                                    <p className="text-sm text-gray-500 font-georgia">Reference: {result.referenceRange}</p>
                                                 </div>
                                             </div>
                                             
@@ -664,21 +744,21 @@ export default function ReportPage() {
                                                 
                                                 {/* Notes about the result */}
                                                 {result.notes && (
-                                                    <p className="mt-1 text-sm text-gray-600">{result.notes}</p>
+                                                    <p className="mt-1 text-sm text-gray-600 font-georgia">{result.notes}</p>
                                                 )}
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-gray-500 italic">No test results available</div>
+                                <div className="text-gray-500 italic font-georgia">No test results available</div>
                             )}
                             
                             {/* If there's raw analysis results, show them as a fallback */}
                             {!parsedResults.results.length && report.analysisResults && (
                                 <div className="mt-4 p-4 border rounded-md bg-white">
                                     <h3 className="font-bold mb-2">Raw Analysis Results</h3>
-                                    <div className="whitespace-pre-wrap text-sm">
+                                    <div className="whitespace-pre-wrap text-sm font-georgia">
                                         {report.analysisResults}
                                     </div>
                                 </div>
@@ -692,10 +772,12 @@ export default function ReportPage() {
             <button
                 onClick={() => setIsChatOpen(true)}
                 className="fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-40"
-                aria-label="Open chat"
+                aria-label="Open chat with doctor assistant"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 3.5a1.5 1.5 0 013 0V4h-3v-.5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 11h6m-3-3v6" />
                 </svg>
             </button>
             
@@ -703,7 +785,8 @@ export default function ReportPage() {
             <ChatBot 
                 testAnalysis={report?.analysisResults || ''} 
                 isOpen={isChatOpen} 
-                onClose={() => setIsChatOpen(false)} 
+                onClose={() => setIsChatOpen(false)}
+                initialInput={chatInput}
             />
         </div>
     );

@@ -223,12 +223,12 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
     }, [isAnalyzing]);
 
     return (
-        <div className="upload-container bg-gray-500 p-6 rounded-lg shadow-sm">
+        <div className="upload-container p-6 rounded-lg shadow-md text-white border border-gray-300" style={{ backgroundColor: '#5F8D99' }}>
             <h1 className="text-xl font-bold mb-4">Bloodwork Upload</h1>
             
             {!isLoggedIn ? (
-                <div className="p-4 bg-yellow-100 border border-yellow-400 rounded-md">
-                    <p className="text-yellow-700">Please log in to save your reports to your account.</p>
+                <div className="p-4 bg-blue-700 bg-opacity-50 border border-blue-400 rounded-md">
+                    <p className="text-white">Please log in to save your reports to your account.</p>
                     <a href="/login" className="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
                         Log In
                     </a>
@@ -244,7 +244,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                             id="reportName"
                             value={reportName}
                             onChange={(e) => setReportName(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                            className="w-full px-3 py-2 border border-blue-300 bg-blue-50 text-blue-900 rounded-md"
                             required
                         />
                     </div>
@@ -258,7 +258,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                             id="reportDate"
                             value={reportDate}
                             onChange={(e) => setReportDate(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                            className="w-full px-3 py-2 border border-blue-300 bg-blue-50 text-blue-900 rounded-md"
                             required
                         />
                     </div>
@@ -272,14 +272,14 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                             id="pdfUpload"
                             accept=".pdf"
                             onChange={handleFileChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                            className="w-full px-3 py-2 border border-blue-300 bg-blue-50 text-blue-900 rounded-md"
                             required
                         />
                     </div>
                     
                     <button
                         type="submit"
-                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 shadow-md"
                         disabled={!selectedFile || !reportName || !reportDate || isAnalyzing}
                     >
                         {isAnalyzing ? "Processing..." : "Upload Report"}
@@ -304,11 +304,11 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                 </form>
             ) : (
                 <div className="success-message space-y-4">
-                    <div className="p-4 bg-green-100 border border-green-400 rounded-md">
-                        <p className="text-green-700">{uploadStatus || "Report uploaded successfully!"}</p>
+                    <div className="p-4 bg-blue-700 bg-opacity-50 border border-blue-400 rounded-md">
+                        <p className="text-white">{uploadStatus || "Report uploaded successfully!"}</p>
                     </div>
                     
-                    <div className="report-details p-4 border rounded-md">
+                    <div className="report-details p-4 border border-blue-400 bg-blue-700 bg-opacity-30 rounded-md">
                         <h2 className="font-bold mb-2">Report Details</h2>
                         <p><strong>Report Number:</strong> {reportNumber}</p>
                         <p><strong>Report Name:</strong> {reportName}</p>
@@ -319,7 +319,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                                 href={fileUrl} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 inline-block"
+                                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 inline-block shadow-md"
                             >
                                 View PDF
                             </a>
@@ -327,7 +327,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                     </div>
                     
                     {analysisResults && (
-                        <div className="analysis-results p-4 border rounded-md">
+                        <div className="analysis-results p-4 border border-blue-400 bg-blue-700 bg-opacity-30 rounded-md">
                             <h2 className="font-bold mb-2">Blood Analysis Results</h2>
                             <div className="whitespace-pre-wrap">{analysisResults}</div>
                         </div>
@@ -335,7 +335,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                     
                     {/* Debug section - only visible in development */}
                     {process.env.NODE_ENV === 'development' && (
-                        <div className="debug-section p-4 border border-yellow-300 rounded-md bg-yellow-50 mt-4">
+                        <div className="debug-section p-4 border border-blue-300 rounded-md bg-blue-700 bg-opacity-20 mt-4">
                             <details>
                                 <summary className="font-bold cursor-pointer">Debug Information</summary>
                                 <div className="mt-2">
@@ -343,7 +343,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                                     <p><strong>File Path:</strong> {fileUrl}</p>
                                     <p><strong>Client ID:</strong> {clientId || "Not logged in"}</p>
                                     <p><strong>Raw Analysis Results:</strong></p>
-                                    <pre className="bg-gray-100 p-2 rounded text-xs overflow-auto max-h-60">
+                                    <pre className="bg-blue-50 text-blue-900 p-2 rounded text-xs overflow-auto max-h-60">
                                         {JSON.stringify(analysisResults, null, 2)}
                                     </pre>
                                 </div>
@@ -362,7 +362,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                             setAnalysisResults(null);
                             setFileUrl("");
                         }}
-                        className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 shadow-md"
                     >
                         Upload Another Report
                     </button>

@@ -1,32 +1,34 @@
 #report-upload{
     display: flex;
-    border: 2px solid black;
     border-radius: 10px;
     padding: 10px;
     margin: 10px;
     align-items: center;
     justify-content: center;
-    background-color: rgba(174, 169, 169, 0.979);
+    background-color: transparent;
+    border: none;
 }
 
 /* Report Analysis Styles */
 
 .upload-container {
-  background-color: rgba(238, 238, 239, 0.486);
+  background-color: #5F8D99;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #d1d5db; /* Light gray border */
 }
 
 .report-upload-section {
-  border: 2px solid black;
+  border: none;
   border-radius: 10px;
-  padding: 20px;
-  margin: 10px;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
   max-width: 600px;
-  background-color: rgba(152, 151, 151, 0.833);
+  background-color: transparent;
 }
 
 .report-header{
@@ -34,13 +36,13 @@
     justify-content: center;
     align-items: center;
     padding-left: 85px;
-
+    font-size: 1.25rem; /* Larger font size */
 }
 
 .progress-container {
   width: 256px; /* Same as w-64 in Tailwind */
   height: 75px; /* Same as h-4 */
-  background-color: #cbcccf; /* Tailwind gray-200 */
+  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
   border-radius: 9999px; /* Makes it rounded */
   overflow: hidden;
   position: relative; /* Add position relative to contain the absolute positioned elements */
@@ -66,4 +68,81 @@
   opacity: 0.7; /* Slightly more visible */
   z-index: 3; /* Ensure syringe image is on top of the progress bar */
   pointer-events: none; /* Prevent image from interfering with clicks */
+}
+
+/* Report Card Styles */
+.report-card {
+  position: relative;
+  transition: transform 0.2s ease-in-out;
+  margin-top: 10px;
+  border-left: 1px solid #e5e7eb;
+}
+
+.report-card:hover {
+  transform: translateY(-5px);
+}
+
+.report-tab {
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  background-color: #f3f4f6; /* Lighter gray for the tab */
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding: 4px 12px;
+  z-index: 1;
+  box-shadow: 0 -2px 3px rgba(0, 0, 0, 0.05);
+}
+
+.report-content {
+  background-color: #f9fafb; /* Light gray background */
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  height: 100%;
+  transition: box-shadow 0.3s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.report-content:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Add styles for selectable text */
+.selectable-text {
+  cursor: text;
+  position: relative;
+}
+
+.selectable-text::selection {
+  background-color: rgba(59, 130, 246, 0.3); /* Light blue highlight */
+  color: #1e40af; /* Darker blue text */
+}
+
+.selectable-text:hover {
+  background-color: rgba(243, 244, 246, 0.7); /* Very light gray background on hover */
+}
+
+/* Add a subtle indicator when hovering */
+.selectable-text::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 12px 12px 0;
+  border-color: transparent rgba(59, 130, 246, 0.2) transparent transparent;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.selectable-text:hover::after {
+  opacity: 1;
+}
+
+/* Add Georgia font class */
+.font-georgia {
+  font-family: Georgia, 'Times New Roman', Times, serif;
 }

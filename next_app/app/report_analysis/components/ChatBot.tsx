@@ -12,11 +12,12 @@ interface ChatBotProps {
   testAnalysis: string;
   isOpen: boolean;
   onClose: () => void;
+  initialInput?: string;
 }
 
-export default function ChatBot({ testAnalysis, isOpen, onClose }: ChatBotProps) {
+export default function ChatBot({ testAnalysis, isOpen, onClose, initialInput = '' }: ChatBotProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { sender: 'bot', text: 'Hello! I can help answer questions about your blood test results. What would you like to know?', timestamp: new Date() }
+    { sender: 'bot', text: 'Hello! I\'m Dr. Health, your medical assistant. I can help interpret your blood test results and answer any health-related questions. How can I assist you today?', timestamp: new Date() }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -27,6 +28,13 @@ export default function ChatBot({ testAnalysis, isOpen, onClose }: ChatBotProps)
   useEffect(() => {
     setSessionId(uuidv4());
   }, []);
+
+  // Update input when initialInput changes
+  useEffect(() => {
+    if (initialInput) {
+      setInput(initialInput);
+    }
+  }, [initialInput]);
 
   // Scroll to the bottom of the chat when messages change
   useEffect(() => {
@@ -103,7 +111,14 @@ export default function ChatBot({ testAnalysis, isOpen, onClose }: ChatBotProps)
     <div className="fixed bottom-4 right-4 w-80 md:w-96 h-[500px] bg-white rounded-lg shadow-xl flex flex-col overflow-hidden z-50 border border-gray-200">
       {/* Chat header */}
       <div className="bg-blue-600 text-white px-4 py-3 flex justify-between items-center">
-        <h3 className="font-medium">Blood Test Assistant</h3>
+        <div className="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 3.5a1.5 1.5 0 013 0V4h-3v-.5z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 11h6m-3-3v6" />
+          </svg>
+          <h3 className="font-medium">Dr. Health Assistant</h3>
+        </div>
         <button 
           onClick={onClose}
           className="text-white hover:text-gray-200 focus:outline-none"
