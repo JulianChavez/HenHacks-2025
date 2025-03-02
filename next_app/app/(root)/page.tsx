@@ -3,7 +3,11 @@ import blood_logo from "../../public/blood_logo.png";
 import Link from "next/link";
 import Bell_headshot from "../../public/Bell_headshot.jpeg";
 import Julian_headshot from "../../public/Julian_headshot.jpg";
+<<<<<<< HEAD
 import Jack_headshot from "../../public/JackNew.png";
+=======
+import Jack_headshot from "../../public/Jack_headshot.png";
+>>>>>>> main
 
 export default function Home() {
   return (
@@ -24,9 +28,14 @@ export default function Home() {
           </nav>
         </div>
         <div id="login">
-          <Link href="/login" className="px-6 py-3 rounded-full bg-gray-700 text-white font-bold shadow-lg hover:bg-gray-600">
-            Login
-          </Link>
+          <div className="flex gap-4">
+            <Link href="/signup" className="px-6 py-3 rounded-full bg-green-600 text-white font-bold shadow-lg hover:bg-green-500">
+              Sign Up
+            </Link>
+            <Link href="/login" className="px-6 py-3 rounded-full bg-gray-700 text-white font-bold shadow-lg hover:bg-gray-600">
+              Login
+            </Link>
+          </div>
         </div>
       </div>
 

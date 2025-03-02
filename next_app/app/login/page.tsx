@@ -43,10 +43,15 @@ export default function Login() {
             }
             
             if (data.success) {
-                // Store client info in localStorage or session storage if needed
+                // Store client info in localStorage (excluding password)
                 localStorage.setItem("client", JSON.stringify(data.client));
                 
-                // Redirect to the report analysis page
+                // Store user health information
+                if (data.userInfo) {
+                    localStorage.setItem("userInfo", JSON.stringify(data.userInfo));
+                }
+                
+                // Redirect to report analysis page
                 router.push("/report_analysis");
             } else {
                 setError(data.error || "Invalid username or password");
@@ -106,13 +111,22 @@ export default function Login() {
                         <div className="flex items-center justify-between">
                             <button 
                                 type="submit"
-                                className="bg-gray-700 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline"
+                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline"
                                 disabled={loading}
                             >
-                                {loading ? "Signing In..." : "Sign In"}
+                                {loading ? "Logging in..." : "Sign In"}
                             </button>
                         </div>
                     </form>
+                    
+                    <div className="text-center">
+                        <p className="text-sm">
+                            Don't have an account?{" "}
+                            <Link href="/signup" className="text-blue-500 hover:underline">
+                                Sign up
+                            </Link>
+                        </p>
+                    </div>
                 </div>
 
                 <div className="mt-4">
