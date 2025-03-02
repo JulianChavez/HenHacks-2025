@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { connectToDB } from '@/app/lib/db';
 
+// Add an interface for the MySQL result
+interface MySQLDeleteResult {
+  affectedRows: number;
+  // Add other properties as needed
+}
+
 export async function POST(request: Request) {
   try {
     const { report_number, client_id } = await request.json();
@@ -18,7 +24,7 @@ export async function POST(request: Request) {
     
     // Build the query based on available parameters
     let query = 'DELETE FROM report WHERE report_number = ?';
-    let params = [report_number];
+    const params = [report_number];
     
     // If client_id is provided, add it to the query for additional security
     if (client_id) {
@@ -29,7 +35,8 @@ export async function POST(request: Request) {
     // Delete the report
     const [result] = await pool.query(query, params);
     
-    const deleteResult = result as any;
+    // Then use this type for the result
+    const deleteResult = result as MySQLDeleteResult;
     
     // Check if any rows were affected
     if (deleteResult.affectedRows === 0) {
@@ -44,7 +51,7 @@ export async function POST(request: Request) {
       success: true,
       message: 'Report deleted successfully'
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error deleting report:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete report' },

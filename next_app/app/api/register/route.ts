@@ -66,7 +66,7 @@ export async function POST(request: Request) {
       await pool.query('ROLLBACK');
       throw error;
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Registration error:', error);
     return NextResponse.json(
       { success: false, error: 'Registration failed' },

@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       message: 'Report updated successfully',
       report_ID: report_ID
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error updating report:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update report' },

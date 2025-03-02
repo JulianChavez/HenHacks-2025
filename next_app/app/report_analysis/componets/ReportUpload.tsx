@@ -206,7 +206,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
         if (isAnalyzing) {
             setProgress(0); // Reset progress when analysis starts
     
-            let interval = setInterval(() => {
+            const interval = setInterval(() => {
                 setProgress((prevProgress) => {
                     if (prevProgress >= 100) {
                         clearInterval(interval);

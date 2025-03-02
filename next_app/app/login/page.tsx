@@ -56,8 +56,8 @@ export default function Login() {
             } else {
                 setError(data.error || "Invalid username or password");
             }
-        } catch (err: any) {
-            setError(err.message || "Error during login. Please try again.");
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Error during login. Please try again.");
             console.error("Login error:", err);
         } finally {
             setLoading(false);
@@ -121,7 +121,7 @@ export default function Login() {
                     
                     <div className="text-center">
                         <p className="text-sm">
-                            Don't have an account?{" "}
+                            Don&apos;t have an account?{" "}
                             <Link href="/signup" className="text-blue-500 hover:underline">
                                 Sign up
                             </Link>

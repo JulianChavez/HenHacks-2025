@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import { connectToDB } from '@/app/lib/db';
 
+// Add an interface for the MySQL result
+interface MySQLInsertResult {
+  insertId: number;
+  affectedRows: number;
+  // Add other properties as needed
+}
+
 export async function POST(request: Request) {
   try {
     const { client_id, title, file_url, analysis_results, report_number, report_ID, report_date } = await request.json();
@@ -23,7 +30,13 @@ export async function POST(request: Request) {
     
     // Insert the report into the report table
     let query = 'INSERT INTO report (client_id, results, report_number, report_date, report_name';
-    let values = [client_id, analysis_results || '', reportNumber, reportDate, title || 'Blood Test Report'];
+    const values = [
+      client_id,
+      analysis_results || '',
+      reportNumber,
+      reportDate,
+      title || 'Blood Test Report'
+    ];
     let placeholders = '?, ?, ?, ?, ?';
     
     // If report_ID is provided, include it in the query
@@ -37,7 +50,8 @@ export async function POST(request: Request) {
     
     const [result] = await pool.query(query, values);
     
-    const insertResult = result as any;
+    // Then use this type for the result
+    const insertResult = result as MySQLInsertResult;
     
     // Return success response with the report_ID
     return NextResponse.json({
@@ -46,7 +60,7 @@ export async function POST(request: Request) {
       report_ID: report_ID || insertResult.insertId,
       report_number: reportNumber
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error saving report:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to save report' },

@@ -73,9 +73,9 @@ export default function Signup() {
             } else {
                 setError(data.error || "Registration failed");
             }
-        } catch (err: any) {
-            setError(err.message || "Error during registration. Please try again.");
-            console.error("Registration error:", err);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Error during signup. Please try again.");
+            console.error("Signup error:", err);
         } finally {
             setLoading(false);
         }

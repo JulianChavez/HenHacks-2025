@@ -6,12 +6,6 @@ import ReportList, { Report } from "./componets/ReportList";
 import "./report.css";
 import Link from "next/link";
 
-// Define user interface
-interface User {
-    id: number;
-    name: string;
-}
-
 // Local storage key
 const REPORTS_STORAGE_KEY = 'bloodwork_reports';
 
@@ -93,8 +87,8 @@ export default function ReportAnalysis() {
                             setReports(combinedReports);
                             localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(combinedReports));
                         }
-                    } catch (dbError) {
-                        console.error("Error fetching reports from database:", dbError);
+                    } catch (error: unknown) {
+                        console.error("Error fetching reports:", error);
                         // Continue with local storage reports if available
                     }
                 } else if (!savedReports) {

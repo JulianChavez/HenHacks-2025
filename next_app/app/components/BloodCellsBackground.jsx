@@ -92,7 +92,7 @@ export default function BloodCellsBackground() {
   }, [cellCount]);
 
   // Soft pink background color
-  const pinkBackgroundColor = "#e8a5a5"; // Very light pink
+  const pinkBackgroundColor = "#fff1f2"; // Very light pink
 
   return (
     <div className="fixed inset-0 z-0" style={{ backgroundColor: pinkBackgroundColor }}>

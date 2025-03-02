@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 import { connectToDB } from '@/app/lib/db';
 
+// Add an interface for the report
+interface Report {
+  report_number: number;
+  client_id: number;
+  report_date: string;
+  report_name: string;
+  // Add other properties as needed
+}
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
@@ -23,17 +32,17 @@ export async function GET(request: Request) {
       [clientId]
     );
     
-    const reports = rows as any[];
+    const reports = rows as Report[];
     
     // Return success response
     return NextResponse.json({
       success: true,
       reports: reports
     });
-  } catch (error) {
-    console.error('Error retrieving reports:', error);
+  } catch (error: unknown) {
+    console.error('Error fetching reports:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to retrieve reports' },
+      { success: false, error: 'Failed to fetch reports' },
       { status: 500 }
     );
   }

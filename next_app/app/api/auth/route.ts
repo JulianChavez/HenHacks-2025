@@ -1,6 +1,22 @@
 import { NextResponse } from 'next/server';
 import { connectToDB } from '@/app/lib/db';
 
+// For the client object, create a proper interface
+interface Client {
+  client_id: number;
+  username: string;
+  password?: string; // Make password optional so it can be deleted
+  // Add other client properties
+  health_info?: {
+    age: number;
+    gender: string;
+    diseases: string;
+  };
+  age?: number;
+  gender?: string;
+  diseases?: string;
+}
+
 export async function POST(request: Request) {
   try {
     const { username, password } = await request.json();
@@ -24,8 +40,10 @@ export async function POST(request: Request) {
       [username, password]
     );
 
+    // Then use this type for the clients array
+    const clients = clientRows as Client[];
+
     // Check if client exists
-    const clients = clientRows as any[];
     if (clients.length === 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid username or password' },
@@ -34,7 +52,9 @@ export async function POST(request: Request) {
     }
 
     // Client authenticated successfully
-    const client = clients[0];
+    const client: Client = {
+      ...clients[0]
+    };
     
     // Don't send the password back to the client
     delete client.password;
@@ -46,7 +66,13 @@ export async function POST(request: Request) {
         [client.client_id]
       );
       
-      const userInfo = userInfoRows as any[];
+      // And for the userInfo array
+      const userInfo = userInfoRows as Array<{
+        health_info: string;
+        age: number;
+        gender: string;
+        diseases: string;
+      }>;
       if (userInfo.length > 0) {
         // Add health information to the client object
         client.health_info = {
@@ -55,7 +81,7 @@ export async function POST(request: Request) {
           diseases: userInfo[0].diseases
         };
       }
-    } catch (infoError) {
+    } catch (infoError: unknown) {
       console.error('Error fetching user health information:', infoError);
       // Continue even if we can't get health info
     }
@@ -64,7 +90,7 @@ export async function POST(request: Request) {
       success: true,
       client: client
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Login error:', error);
     return NextResponse.json(
       { success: false, error: 'Authentication failed' },

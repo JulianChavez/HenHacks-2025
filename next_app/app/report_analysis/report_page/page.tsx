@@ -5,6 +5,7 @@ import { Report } from "../components/ReportList";
 import Header from "../components/header";
 import Link from "next/link";
 import ChatBot from "../components/ChatBot";
+import { Suspense } from 'react';
 
 // Local storage key (must match the one in the main page)
 const REPORTS_STORAGE_KEY = 'bloodwork_reports';
@@ -63,10 +64,10 @@ const parseAnalysisResults = (analysisResults: string | undefined) => {
                     const parts = line.split(/\s{2,}|\t/);
                     if (parts.length >= 3) {
                         // Try to extract notes - anything after the reference range
-                        let test = parts[0];
-                        let result = parts[1];
-                        let units = parts[2];
-                        let referenceRange = parts[3] || 'N/A';
+                        const test = parts[0];
+                        const result = parts[1];
+                        const units = parts[2] || '';
+                        const referenceRange = parts[3] || 'N/A';
                         let status = 'Normal';
                         let notes = '';
                         let percentDeviation = 0;
@@ -451,7 +452,46 @@ const handleTextSelection = (setChatInput: (text: string) => void, setIsChatOpen
     }
 };
 
-export default function ReportPage() {
+// Fix the parseReferenceRange function to remove unused variables
+const parseReferenceRange = (range: string) => {
+  // If range is empty or N/A, return default values
+  if (!range || range === 'N/A') {
+    return [0, 0];
+  }
+
+  // Try to extract numeric values from the range
+  const matches = range.match(/(\d+\.?\d*)\s*-\s*(\d+\.?\d*)/);
+  if (matches && matches.length >= 3) {
+    const min = parseFloat(matches[1]);
+    const max = parseFloat(matches[2]);
+    // We don't need rangeMiddle, so we can remove it
+    // const rangeMiddle = (min + max) / 2;
+    return [min, max];
+  }
+
+  // If no range pattern found, check for single value with comparison
+  const singleMatch = range.match(/([<>]=?)\s*(\d+\.?\d*)/);
+  if (singleMatch && singleMatch.length >= 3) {
+    // We don't need prefix, so we can use _ to ignore it
+    const _ = singleMatch[1];
+    const value = parseFloat(singleMatch[2]);
+    return [value, value];
+  }
+
+  return [0, 0];
+};
+
+// Define a proper interface for the report data
+interface ReportData {
+  report_number: number;
+  client_id: number;
+  report_date: string;
+  report_name: string;
+  results: string;
+  // Add other properties as needed
+}
+
+function ReportPageContent() {
     const searchParams = useSearchParams();
     const reportNumber = searchParams.get('reportNumber');
     
@@ -531,7 +571,7 @@ export default function ReportPage() {
                                 report_ID: data.report.report_ID
                             };
                         }
-                    } catch (dbError) {
+                    } catch (dbError: unknown) {
                         console.error("Error fetching report from database:", dbError);
                         // Continue with local storage report if available, otherwise show error
                         if (!foundReport) {
@@ -553,7 +593,7 @@ export default function ReportPage() {
                 setParsedResults(parsed);
                 
                 setLoading(false);
-            } catch (error) {
+            } catch (error: unknown) {
                 console.error("Error loading report:", error);
                 setError("Error loading report details");
                 setLoading(false);
@@ -789,5 +829,13 @@ export default function ReportPage() {
                 initialInput={chatInput}
             />
         </div>
+    );
+}
+
+export default function ReportPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ReportPageContent />
+        </Suspense>
     );
 }

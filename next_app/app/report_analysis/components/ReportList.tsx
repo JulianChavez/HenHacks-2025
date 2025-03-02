@@ -147,8 +147,9 @@ export default function ReportList({ reports = [], onDeleteReport, onViewDetails
                             });
                         }
                     }
-                } catch (error) {
-                    console.error("Error loading reports from database:", error);
+                } catch (error: unknown) {
+                    console.error("Error fetching reports:", error);
+                    // Handle error appropriately
                 }
             }
         };

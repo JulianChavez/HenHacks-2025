@@ -45,20 +45,20 @@ export default function Home() {
         <div className="bg-gray-200 p-6 max-w-4xl mx-auto rounded-xl shadow-md mt-16 z-8">
           <p className="text-xl font-georgia mb-4">Your AI-powered blood analysis tool designed with you in mind. Simply upload your blood test results and receive a comprehensive report with clear, AI-driven insights that help you understand what your numbers really mean.</p>
           
-          <p className="text-xl font-georgia mb-4">Our advanced AI technology breaks down complex medical data, helping you understand key health indicators and what they mean for your well-being. Whether you're tracking changes over time, managing a chronic condition, or simply curious about your results, we make bloodwork more accessible and easier to interpret.</p>
+          <p className="text-xl font-georgia mb-4">Our advanced AI technology breaks down complex medical data, helping you understand key health indicators and what they mean for your well-being. Whether you&apos;re tracking changes over time, managing a chronic condition, or simply curious about your results, we make bloodwork more accessible and easier to interpret.</p>
           
-          <p className="text-xl font-georgia mb-4">BloodQwuirk's intelligent system identifies patterns and potential concerns in your bloodwork that might otherwise go unnoticed, providing you with a deeper understanding of your health status and trends over time.</p>
+          <p className="text-xl font-georgia mb-4">BloodQwuirk&apos;s intelligent system identifies patterns and potential concerns in your bloodwork that might otherwise go unnoticed, providing you with a deeper understanding of your health status and trends over time.</p>
           
-          <p className="text-xl font-georgia">Take control of your health journey with BloodQwuirk—because understanding your body shouldn't require a medical degree. Start making informed decisions about your health today!</p>
+          <p className="text-xl font-georgia">Take control of your health journey with BloodQwuirk—because understanding your body shouldn&apos;t require a medical degree. Start making informed decisions about your health today!</p>
         </div>
       </div>
 
       <div id="about-us-section" className="relative mt-27 z-10">
         <h1 className="text-center text-4xl font-bold mb-6">About Us</h1>
         <div className="bg-gray-200 p-6 max-w-4xl mx-auto rounded-xl shadow-md mb-12 z-8">
-          <p className="text-xl font-georgia mb-4">At BloodQwuirk, we're a team of passionate healthcare technology enthusiasts dedicated to making medical information more accessible and understandable for everyone.</p>
+          <p className="text-xl font-georgia mb-4">At BloodQwuirk, we&apos;re a team of passionate healthcare technology enthusiasts dedicated to making medical information more accessible and understandable for everyone.</p>
           <p className="text-xl font-georgia mb-4">Our mission is to bridge the gap between complex medical data and everyday understanding, empowering you to take control of your health journey with confidence and clarity.</p>
-          <p className="text-xl font-georgia">We believe that everyone deserves to understand their health data without needing a medical degree, and we're committed to making that possible through innovative AI technology and user-friendly design.</p>
+          <p className="text-xl font-georgia">We believe that everyone deserves to understand their health data without needing a medical degree, and we&apos;re committed to making that possible through innovative AI technology and user-friendly design.</p>
         </div>
         
         <div className="flex justify-center gap-8 mt-8">
@@ -92,8 +92,8 @@ export default function Home() {
         <h3 className="text-4xl font-bold mb-6 mt-16">Future Plans</h3>
         <div className="bg-gray-200 p-6 max-w-4xl mx-auto rounded-xl shadow-md mt-14 z-8">
           <p className="text-xl font-georgia mb-4">The future of BloodQwuirk includes exciting advancements aimed at enhancing user experience and security while expanding our capabilities to serve you better.</p>
-          <p className="text-xl font-georgia mb-4">We're developing a comprehensive mobile app, allowing you to access your reports and insights seamlessly on the go. This will include features like report history tracking, trend analysis, and personalized health notifications.</p>
-          <p className="text-xl font-georgia mb-4">Our AI technology will continue to evolve, offering more detailed and personalized health insights based on your unique bloodwork patterns and medical history. We're working with healthcare professionals to ensure our analysis remains accurate and helpful.</p>
+          <p className="text-xl font-georgia mb-4">We&apos;re developing a comprehensive mobile app, allowing you to access your reports and insights seamlessly on the go. This will include features like report history tracking, trend analysis, and personalized health notifications.</p>
+          <p className="text-xl font-georgia mb-4">Our AI technology will continue to evolve, offering more detailed and personalized health insights based on your unique bloodwork patterns and medical history. We&apos;re working with healthcare professionals to ensure our analysis remains accurate and helpful.</p>
           <p className="text-xl font-georgia">Additionally, we plan to introduce community features where users can connect with others who have similar health profiles, creating a supportive environment for sharing experiences and knowledge under the guidance of healthcare professionals.</p>
         </div>
       </div>

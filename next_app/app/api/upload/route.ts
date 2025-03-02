@@ -6,6 +6,15 @@ import { promisify } from 'util';
 
 const execPromise = promisify(exec);
 
+// Add an interface for the user info
+interface UserInfo {
+  health_info: string;
+  age: number;
+  gender: string;
+  diseases: string;
+  // Add other properties as needed
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -53,7 +62,7 @@ export async function POST(request: NextRequest) {
             [clientId]
           );
           
-          const userInfo = userInfoRows as any[];
+          const userInfo = userInfoRows as UserInfo[];
           if (userInfo.length > 0) {
             // Create a JSON string with user information
             const userInfoObj = {
@@ -125,10 +134,10 @@ export async function POST(request: NextRequest) {
       });
     }
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error uploading file:', error);
     return NextResponse.json(
-      { error: 'Error uploading file' },
+      { success: false, error: 'Failed to upload file' },
       { status: 500 }
     );
   }
