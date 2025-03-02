@@ -24,9 +24,14 @@ export default function Home() {
           </nav>
         </div>
         <div id="login">
-          <Link href="/login" className="px-6 py-3 rounded-full bg-gray-700 text-white font-bold shadow-lg hover:bg-gray-600">
-            Login
-          </Link>
+          <div className="flex gap-4">
+            <Link href="/signup" className="px-6 py-3 rounded-full bg-green-600 text-white font-bold shadow-lg hover:bg-green-500">
+              Sign Up
+            </Link>
+            <Link href="/login" className="px-6 py-3 rounded-full bg-gray-700 text-white font-bold shadow-lg hover:bg-gray-600">
+              Login
+            </Link>
+          </div>
         </div>
       </div>
 
