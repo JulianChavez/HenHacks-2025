@@ -117,7 +117,8 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                                     client_id: clientId,
                                     title: reportName,
                                     analysis_results: analysisText,
-                                    report_number: parseInt(newReportNumber.replace(/\D/g, '')) || Math.floor(Math.random() * 1000000)
+                                    report_number: parseInt(newReportNumber.replace(/\D/g, '')) || Math.floor(Math.random() * 1000000),
+                                    report_date: reportDate
                                 }),
                             });
                             
@@ -222,7 +223,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
     }, [isAnalyzing]);
 
     return (
-        <div className="upload-container">
+        <div className="upload-container bg-gray-500 p-6 rounded-lg shadow-sm">
             <h1 className="text-xl font-bold mb-4">Bloodwork Upload</h1>
             
             {!isLoggedIn ? (
@@ -293,9 +294,9 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                             ></div>
                             {/* Syringe Image Overlay */}
                             <img 
-                                src="../../SyringeTransparent-removebg-preview.png" 
+                                src="/SyringeTransparent-removebg-preview.png" 
                                 alt="Syringe"
-                                className="syringe-image absolute top-0 left-0 w-full h-full"  // Positioning the syringe image over the progress bar
+                                className="syringe-image"
                             />
                             </div>
                         </div>

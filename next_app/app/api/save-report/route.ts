@@ -3,7 +3,7 @@ import { connectToDB } from '@/app/lib/db';
 
 export async function POST(request: Request) {
   try {
-    const { client_id, title, file_url, analysis_results, report_number, report_ID } = await request.json();
+    const { client_id, title, file_url, analysis_results, report_number, report_ID, report_date } = await request.json();
 
     // Validate input
     if (!client_id) {
@@ -18,7 +18,8 @@ export async function POST(request: Request) {
     
     // Generate a report number if not provided
     const reportNumber = report_number || Math.floor(Math.random() * 1000000);
-    const reportDate = new Date().toISOString().split('T')[0];
+    // Use the provided report date or default to today
+    const reportDate = report_date || new Date().toISOString().split('T')[0];
     
     // Insert the report into the report table
     let query = 'INSERT INTO report (client_id, results, report_number, report_date, report_name';

@@ -156,6 +156,15 @@ export default function ReportList({ reports = [], onDeleteReport, onViewDetails
         loadReportsFromDB();
     }, [clientId, isLoggedIn]);
 
+    // Add this function to handle delete with confirmation
+    const handleDeleteWithConfirmation = (reportNumber: string, reportName: string) => {
+        if (window.confirm(`Are you sure you want to delete "${reportName}"? This action cannot be undone.`)) {
+            if (onDeleteReport) {
+                onDeleteReport(reportNumber);
+            }
+        }
+    };
+
     if (filteredReports.length === 0) {
         return (
             <div className="text-center py-8">
@@ -198,7 +207,7 @@ export default function ReportList({ reports = [], onDeleteReport, onViewDetails
                             </Link>
                             {onDeleteReport && (
                                 <button
-                                    onClick={() => onDeleteReport(report.ReportNumber)}
+                                    onClick={() => handleDeleteWithConfirmation(report.ReportNumber, report.ReportName)}
                                     className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
                                 >
                                     Delete
