@@ -10,6 +10,7 @@ export interface Report {
     fileUrl?: string;
     analysisResults?: string;
     client_id?: number | null;
+    report_ID?: number;
 }
 
 interface ReportListProps {
@@ -70,7 +71,8 @@ export default function ReportList({ reports = [], onDeleteReport, onViewDetails
                                 ReportNumber: report.report_number ? report.report_number.toString() : `DB-${report.id || Date.now()}`,
                                 fileUrl: report.file_url || '',
                                 analysisResults: report.results || '',
-                                client_id: report.client_id
+                                client_id: report.client_id,
+                                report_ID: report.report_ID
                             }));
                             
                             // Add database reports to filtered reports if they don't already exist
@@ -88,7 +90,60 @@ export default function ReportList({ reports = [], onDeleteReport, onViewDetails
                                     }
                                 });
                                 
+                                // Store the combined reports in local storage
+                                try {
+                                    localStorage.setItem('bloodwork_reports', JSON.stringify(combinedReports));
+                                } catch (storageError) {
+                                    console.error("Error storing reports in local storage:", storageError);
+                                }
+                                
                                 return combinedReports;
+                            });
+                            
+                            // Check for reports without report_ID and update them
+                            dbReports.forEach(async (report: Report) => {
+                                if (!report.report_ID && report.ReportNumber && report.client_id) {
+                                    try {
+                                        // Generate a report ID if needed
+                                        const generatedReportID = Math.floor(Math.random() * 1000000);
+                                        
+                                        // Call the update-report API
+                                        const updateResponse = await fetch('/api/update-report', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                            },
+                                            body: JSON.stringify({
+                                                client_id: report.client_id,
+                                                report_number: parseInt(report.ReportNumber),
+                                                report_ID: generatedReportID
+                                            }),
+                                        });
+                                        
+                                        if (updateResponse.ok) {
+                                            console.log(`Updated report ${report.ReportNumber} with report_ID ${generatedReportID}`);
+                                            // Update the report in the filtered reports
+                                            setFilteredReports(prevReports => {
+                                                const updatedReports = prevReports.map(r => 
+                                                    r.ReportNumber === report.ReportNumber && r.client_id === report.client_id
+                                                        ? { ...r, report_ID: generatedReportID }
+                                                        : r
+                                                );
+                                                
+                                                // Update local storage with the updated reports
+                                                try {
+                                                    localStorage.setItem('bloodwork_reports', JSON.stringify(updatedReports));
+                                                } catch (storageError) {
+                                                    console.error("Error updating reports in local storage:", storageError);
+                                                }
+                                                
+                                                return updatedReports;
+                                            });
+                                        }
+                                    } catch (updateError) {
+                                        console.error('Error updating report with report_ID:', updateError);
+                                    }
+                                }
                             });
                         }
                     }

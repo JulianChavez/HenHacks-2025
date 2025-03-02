@@ -21,32 +21,104 @@ export default function ReportAnalysis() {
     // State for selected report details
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
     
-    // Load reports from local storage on component mount
+    // State for client ID
+    const [clientId, setClientId] = useState<number | null>(null);
+    
+    // Load client ID and reports from local storage on component mount
     useEffect(() => {
-        const loadReports = () => {
+        // Get client ID from local storage
+        try {
+            const clientData = localStorage.getItem("client");
+            if (clientData) {
+                const client = JSON.parse(clientData);
+                if (client && client.client_id) {
+                    setClientId(client.client_id);
+                }
+            }
+        } catch (error) {
+            console.error("Error loading client data:", error);
+        }
+        
+        const loadReports = async () => {
             try {
+                // First try to load from local storage
                 const savedReports = localStorage.getItem(REPORTS_STORAGE_KEY);
+                let localReports: Report[] = [];
+                
                 if (savedReports) {
-                    setReports(JSON.parse(savedReports));
-                } else {
-                    // Set sample reports if no saved reports exist
-                    setReports([
+                    localReports = JSON.parse(savedReports);
+                    setReports(localReports);
+                }
+                
+                // If client is logged in, also fetch reports from database
+                if (clientId) {
+                    try {
+                        const response = await fetch(`/api/get-reports?client_id=${clientId}`);
+                        
+                        if (!response.ok) {
+                            throw new Error("Failed to fetch reports from database");
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data.success && Array.isArray(data.reports)) {
+                            // Convert database reports to the Report format
+                            const dbReports: Report[] = data.reports.map((report: any) => ({
+                                ReportName: report.report_name || `Report ${report.report_ID || 'Unknown'}`,
+                                ReportDate: report.report_date || new Date().toISOString().split('T')[0],
+                                ReportNumber: report.report_number ? report.report_number.toString() : `DB-${report.report_ID || Date.now()}`,
+                                fileUrl: report.file_url || '',
+                                analysisResults: report.results || '',
+                                client_id: report.client_id,
+                                report_ID: report.report_ID
+                            }));
+                            
+                            // Combine with local reports, avoiding duplicates
+                            const combinedReports = [...localReports];
+                            
+                            dbReports.forEach((dbReport: Report) => {
+                                // Check if report already exists in combined reports
+                                const exists = combinedReports.some(
+                                    r => (r.ReportNumber === dbReport.ReportNumber && 
+                                         r.client_id === dbReport.client_id)
+                                );
+                                
+                                if (!exists) {
+                                    combinedReports.push(dbReport);
+                                }
+                            });
+                            
+                            // Update state and local storage
+                            setReports(combinedReports);
+                            localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(combinedReports));
+                        }
+                    } catch (dbError) {
+                        console.error("Error fetching reports from database:", dbError);
+                        // Continue with local storage reports if available
+                    }
+                } else if (!savedReports) {
+                    // Set sample reports if no saved reports exist and no client is logged in
+                    const sampleReports = [
                         { ReportName: "Sample Report 1", ReportDate: "2024-01-01", ReportNumber: "RPT-123456-789" },
                         { ReportName: "Sample Report 2", ReportDate: "2024-02-15", ReportNumber: "RPT-234567-890" }
-                    ]);
+                    ];
+                    setReports(sampleReports);
+                    localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(sampleReports));
                 }
             } catch (error) {
-                console.error("Error loading reports from local storage:", error);
+                console.error("Error loading reports:", error);
                 // Set default reports on error
-                setReports([
+                const defaultReports = [
                     { ReportName: "Sample Report 1", ReportDate: "2024-01-01", ReportNumber: "RPT-123456-789" },
                     { ReportName: "Sample Report 2", ReportDate: "2024-02-15", ReportNumber: "RPT-234567-890" }
-                ]);
+                ];
+                setReports(defaultReports);
+                localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(defaultReports));
             }
         };
         
         loadReports();
-    }, []);
+    }, [clientId]);
     
     // Save reports to local storage whenever they change
     useEffect(() => {

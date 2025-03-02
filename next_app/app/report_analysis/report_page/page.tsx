@@ -237,7 +237,7 @@ export default function ReportPage() {
     }>({ summary: "", recommendations: "", results: [] });
     
     useEffect(() => {
-        const loadReport = () => {
+        const loadReport = async () => {
             try {
                 if (!reportNumber) {
                     setError("No report number provided");
@@ -245,16 +245,70 @@ export default function ReportPage() {
                     return;
                 }
                 
-                // Load reports from local storage
+                // First try to load from local storage for backward compatibility
                 const savedReports = localStorage.getItem(REPORTS_STORAGE_KEY);
-                if (!savedReports) {
-                    setError("No reports found");
-                    setLoading(false);
-                    return;
+                let foundReport: Report | null = null;
+                
+                if (savedReports) {
+                    try {
+                        const reports: Report[] = JSON.parse(savedReports);
+                        foundReport = reports.find(r => r.ReportNumber === reportNumber) || null;
+                    } catch (e) {
+                        console.error("Error parsing local storage reports:", e);
+                    }
                 }
                 
-                const reports: Report[] = JSON.parse(savedReports);
-                const foundReport = reports.find(r => r.ReportNumber === reportNumber);
+                // If not found in local storage, try to fetch from the database
+                if (!foundReport) {
+                    try {
+                        // Get client ID from local storage if available
+                        let clientId = null;
+                        const clientData = localStorage.getItem("client");
+                        if (clientData) {
+                            const client = JSON.parse(clientData);
+                            if (client && client.client_id) {
+                                clientId = client.client_id;
+                            }
+                        }
+                        
+                        // Fetch the report from the database
+                        const queryParams = new URLSearchParams({
+                            report_number: reportNumber
+                        });
+                        
+                        if (clientId) {
+                            queryParams.append('client_id', clientId.toString());
+                        }
+                        
+                        const response = await fetch(`/api/get-report?${queryParams.toString()}`);
+                        
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || "Failed to fetch report from database");
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data.success && data.report) {
+                            // Convert database report to the Report format
+                            foundReport = {
+                                ReportName: data.report.report_name || `Report ${data.report.report_ID || 'Unknown'}`,
+                                ReportDate: data.report.report_date || new Date().toISOString().split('T')[0],
+                                ReportNumber: data.report.report_number ? data.report.report_number.toString() : `DB-${data.report.report_ID || Date.now()}`,
+                                fileUrl: data.report.file_url || '',
+                                analysisResults: data.report.results || '',
+                                client_id: data.report.client_id,
+                                report_ID: data.report.report_ID
+                            };
+                        }
+                    } catch (dbError) {
+                        console.error("Error fetching report from database:", dbError);
+                        // Continue with local storage report if available, otherwise show error
+                        if (!foundReport) {
+                            throw dbError;
+                        }
+                    }
+                }
                 
                 if (!foundReport) {
                     setError(`Report with number ${reportNumber} not found`);
