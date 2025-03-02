@@ -3,7 +3,7 @@ import blood_logo from "../../public/blood_logo.png";
 import Link from "next/link";
 import Bell_headshot from "../../public/Bell_headshot.jpeg";
 import Julian_headshot from "../../public/Julian_headshot.jpg";
-import Jack_headshot from "../../public/Jack_headshot.jpg";
+import Jack_headshot from "../../public/JackNew.png";
 
 export default function Home() {
   return (
