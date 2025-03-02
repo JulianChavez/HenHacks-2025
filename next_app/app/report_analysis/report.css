@@ -6,13 +6,13 @@
     margin: 10px;
     align-items: center;
     justify-content: center;
-    background-color: white;
+    background-color: rgba(174, 169, 169, 0.979);
 }
 
 /* Report Analysis Styles */
 
 .upload-container {
-  background-color: white;
+  background-color: rgba(238, 238, 239, 0.486);
 }
 
 .report-upload-section {
@@ -26,7 +26,7 @@
   justify-content: center;
   width: 100%;
   max-width: 600px;
-  background-color: white;
+  background-color: rgba(152, 151, 151, 0.833);
 }
 
 .report-header{

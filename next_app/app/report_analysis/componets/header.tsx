@@ -27,15 +27,15 @@ export default function Header() {
 
     return (
         <div>
-            <div id="header" className="rounded-box flex justify-between items-center p-4 bg-blue-50 mb-6 shadow-sm">
+            <div id="header" className="rounded-box flex justify-between items-center p-8 bg-gray-400 mb-10 shadow-sm">
                 <div id="subsection" className="report-header">
-                    <p className="font-medium text-gray-800">
-                        {isLoggedIn ? `Welcome, ${username}` : "Welcome, Guest"}
+                    <p className="font-bold text-gray-800">
+                        {isLoggedIn ? `Welcome, ${username}!` : "Welcome, Guest!"}
                     </p>
                 </div>
                 <div id="Logout-section">
                     {isLoggedIn ? (
-                        <Link href="/" className="px-4 py-2 rounded-md bg-black text-white hover:underline hover:bg-gray-800">
+                        <Link href="/" className="px-4 py-2 rounded-full bg-gray-600 text-white hover:underline hover:bg-gray-600">
                             Logout
                         </Link>
                     ) : (

@@ -223,7 +223,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
     }, [isAnalyzing]);
 
     return (
-        <div className="upload-container bg-white p-6 rounded-lg shadow-sm">
+        <div className="upload-container bg-gray-500 p-6 rounded-lg shadow-sm">
             <h1 className="text-xl font-bold mb-4">Bloodwork Upload</h1>
             
             {!isLoggedIn ? (
