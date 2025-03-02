@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div className="relative min-h-screen bg-black text-black overflow-hidden font-mono">
       {/* Updated Background Image */}
-      <div className="absolute inset-0 bg-black before:content-[''] before:absolute before:inset-0 before:bg-[url('/Friday.jpg')] before:bg-cover before:bg-center before:opacity-70">
+      <div className="absolute inset-0 bg-black before:content-[''] before:absolute before:inset-0 before:bg-[url('/vertical-gradient-2.png')] before:bg-cover before:bg-center before:opacity-70">
       </div>
 
       <div id="header" className="relative rounded-box p-4 bg-opacity-90 bg-gray-400 z-10">
@@ -61,7 +61,7 @@ export default function Home() {
                   className="w-48 h-48 rounded-full object-cover shadow-lg shadow-gray-700 transition-transform transform group-hover:scale-110 group-hover:shadow-xl"
                 />
                 <h3 className="mt-4 font-semibold text-lg">{member.name}</h3>
-                <p className="text-gray-700">{member.role}</p>
+                <p className="text-black">{member.role}</p>
               </div>
           ))}
         </div>
@@ -69,9 +69,9 @@ export default function Home() {
         <div id="future-plans-section" className="relative text-center mt-27 z-10">
         <h3 className="text-2xl font-bold">Future Plans</h3>
         <div className="bg-gray-400 p-1 max-w-3xl mx-auto rounded-xl shadow-md mt-14 z-8">
-          <p className="text-lg">The Future</p>
-          <p className="text-lg">is bright</p>
-          <p className="text-lg">with BloodQwuirk</p>
+          <p className="text-lg">The future of the Bloodwork AI website includes exciting advancements aimed at enhancing user experience and security.</p>
+          <p className="text-lg"> We would develop a mobile app, allowing users to access their reports and insights seamlessly on the go. </p>
+          <p className="text-lg">Additionally, the platform will expand its capabilities by integrating more personalized health insights, enabling users to gain deeper understanding and recommendations based on their bloodwork.</p>
         </div>
       </div>
 

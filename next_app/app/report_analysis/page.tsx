@@ -184,7 +184,7 @@ export default function ReportAnalysis() {
     return (
         <div className="relative min-h-screen overflow-hidden font-mono">
             {/* Background - Matching the root page */}
-            <div className="absolute inset-0 bg-black before:content-[''] before:absolute before:inset-0 before:bg-[url('/Friday.jpg')] before:bg-cover before:bg-center before:opacity-70">
+            <div className="absolute inset-0 bg-black before:content-[''] before:absolute before:inset-0 before:bg-[url('/vertical-gradient-2.png')] before:bg-cover before:bg-center before:opacity-100">
             </div>
             
             <div className="container mx-auto px-4 py-8 relative z-10">
