@@ -108,20 +108,20 @@ export default function ChatBot({ testAnalysis, isOpen, onClose, initialInput = 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 w-80 md:w-96 h-[500px] bg-white rounded-lg shadow-xl flex flex-col overflow-hidden z-50 border border-gray-200">
+    <div className="fixed bottom-4 right-4 w-80 md:w-96 h-[500px] bg-white rounded-lg shadow-xl flex flex-col overflow-hidden z-50 border border-gray-700 border-radius-lg">
       {/* Chat header */}
-      <div className="bg-blue-600 text-white px-4 py-3 flex justify-between items-center">
+      <div className="bg-white text-blue-600 px-4 py-3 flex justify-between items-center border-b border-gray-200">
         <div className="flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 3.5a1.5 1.5 0 013 0V4h-3v-.5z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 11h6m-3-3v6" />
-          </svg>
+          <img 
+            src="/Doctor_new_trans.png" 
+            alt="Doctor icon" 
+            className="h-14 w-14 mr-2 border-2 border-blue-600 bg-white rounded-full p-1"
+          />
           <h3 className="font-medium">Dr. Health Assistant</h3>
         </div>
         <button 
           onClick={onClose}
-          className="text-white hover:text-gray-200 focus:outline-none"
+          className="text-blue-600 hover:text-blue-800 focus:outline-none"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

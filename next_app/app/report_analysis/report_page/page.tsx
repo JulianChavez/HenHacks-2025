@@ -771,14 +771,14 @@ export default function ReportPage() {
             {/* Chat button */}
             <button
                 onClick={() => setIsChatOpen(true)}
-                className="fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-40"
+                className="fixed bottom-4 right-4 bg-white text-blue-600 p-2 rounded-full shadow-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-40"
                 aria-label="Open chat with doctor assistant"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 3.5a1.5 1.5 0 013 0V4h-3v-.5z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 11h6m-3-3v6" />
-                </svg>
+                <img 
+                    src="/Doctor_new_trans.png" 
+                    alt="Doctor icon" 
+                    className="h-32 w-32 border-2 border-blue-600 bg-white rounded-full p-1"
+                />
             </button>
             
             {/* Chat component */}

@@ -52,7 +52,7 @@
   height: 100%;
   background-color: #ee0c0c; /* Red color for progress */
   width: 0%; /* Start at 0%, will be changed dynamically */
-  transition: width 1s ease-in-out;
+  transition: width 0.5s ease-in-out;
   position: relative; /* Add position relative */
   z-index: 2; /* Place above the background but below the syringe */
 }
