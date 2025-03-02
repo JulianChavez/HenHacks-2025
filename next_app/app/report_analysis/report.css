@@ -6,9 +6,14 @@
     margin: 10px;
     align-items: center;
     justify-content: center;
+    background-color: white;
 }
 
 /* Report Analysis Styles */
+
+.upload-container {
+  background-color: white;
+}
 
 .report-upload-section {
   border: 2px solid black;
@@ -21,6 +26,7 @@
   justify-content: center;
   width: 100%;
   max-width: 600px;
+  background-color: white;
 }
 
 .report-header{
@@ -37,22 +43,27 @@
   background-color: #cbcccf; /* Tailwind gray-200 */
   border-radius: 9999px; /* Makes it rounded */
   overflow: hidden;
+  position: relative; /* Add position relative to contain the absolute positioned elements */
 }
 
 .progress-bar {
   height: 100%;
-  background-color: #ee0c0c; /* Tailwind blue-500 */
+  background-color: #ee0c0c; /* Red color for progress */
   width: 0%; /* Start at 0%, will be changed dynamically */
   transition: width 1s ease-in-out;
+  position: relative; /* Add position relative */
+  z-index: 2; /* Place above the background but below the syringe */
 }
 
 .syringe-image {
   position: absolute;
-  top: 0;
+  top: 50%; /* Center vertically */
   left: 0;
-  width: 300px; /* Scale image width to match the container */
-  height: 300px; /* Scale image height to match the container */
-  object-fit: contain; /* Make sure it covers the container */
-  opacity: .5;
-  z-index: 1; /* Ensure syringe image is on top of the progress bar */
+  transform: translateY(-50%); /* Perfect vertical centering */
+  width: 100%; /* Match container width */
+  height: auto; /* Maintain aspect ratio */
+  object-fit: contain; /* Make sure it fits properly */
+  opacity: 0.7; /* Slightly more visible */
+  z-index: 3; /* Ensure syringe image is on top of the progress bar */
+  pointer-events: none; /* Prevent image from interfering with clicks */
 }
