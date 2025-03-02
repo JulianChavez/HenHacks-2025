@@ -100,7 +100,7 @@ export default function ChatBot({ testAnalysis, isOpen, onClose }: ChatBotProps)
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 w-80 md:w-96 h-96 bg-white rounded-lg shadow-xl flex flex-col overflow-hidden z-50 border border-gray-200">
+    <div className="fixed bottom-4 right-4 w-80 md:w-96 h-[500px] bg-white rounded-lg shadow-xl flex flex-col overflow-hidden z-50 border border-gray-200">
       {/* Chat header */}
       <div className="bg-blue-600 text-white px-4 py-3 flex justify-between items-center">
         <h3 className="font-medium">Blood Test Assistant</h3>

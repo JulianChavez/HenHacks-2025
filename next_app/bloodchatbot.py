@@ -43,38 +43,170 @@ def process_input_file(file_path):
         print(f"Error processing input file: {str(e)}", file=sys.stderr)
         return "", "", ""
 
-def generate_mock_response(test_analysis, user_input):
-    """Generate a mock response based on the test analysis and user input"""
-    # Extract key information from test analysis
+def extract_test_values(test_analysis):
+    """Extract all test values from the test analysis text"""
     test_info = {}
     
-    # Extract glucose values
-    if "glucose" in test_analysis.lower():
-        glucose_match = re.search(r'glucose\s+is\s+(\d+)', test_analysis.lower())
-        if glucose_match:
-            test_info["glucose"] = int(glucose_match.group(1))
-        else:
-            # Try to find any number near the word glucose
-            for word in test_analysis.split():
-                if word.isdigit() and "glucose" in test_analysis.lower().split(word)[0][-15:]:
-                    test_info["glucose"] = int(word)
-                    break
+    # Common test patterns
+    test_patterns = {
+        "glucose": [r'glucose\s+is\s+(\d+(?:\.\d+)?)', r'blood\s+sugar\s+is\s+(\d+(?:\.\d+)?)'],
+        "bun": [r'bun\s+is\s+(\d+(?:\.\d+)?)', r'blood\s+urea\s+nitrogen\s+is\s+(\d+(?:\.\d+)?)'],
+        "creatinine": [r'creatinine\s+is\s+(\d+(?:\.\d+)?)'],
+        "egfr": [r'egfr\s+is\s+(\d+(?:\.\d+)?)', r'estimated\s+glomerular\s+filtration\s+rate\s+is\s+(\d+(?:\.\d+)?)'],
+        "alt": [r'alt\s+is\s+(\d+(?:\.\d+)?)', r'alanine\s+aminotransferase\s+is\s+(\d+(?:\.\d+)?)'],
+        "ast": [r'ast\s+is\s+(\d+(?:\.\d+)?)', r'aspartate\s+aminotransferase\s+is\s+(\d+(?:\.\d+)?)'],
+        "wbc": [r'wbc\s+is\s+(\d+(?:\.\d+)?)', r'white\s+blood\s+cells?\s+(?:count\s+)?is\s+(\d+(?:\.\d+)?)'],
+        "rbc": [r'rbc\s+is\s+(\d+(?:\.\d+)?)', r'red\s+blood\s+cells?\s+(?:count\s+)?is\s+(\d+(?:\.\d+)?)'],
+        "hemoglobin": [r'h(?:emo)?globin\s+is\s+(\d+(?:\.\d+)?)', r'hgb\s+is\s+(\d+(?:\.\d+)?)'],
+        "hematocrit": [r'hematocrit\s+is\s+(\d+(?:\.\d+)?)', r'hct\s+is\s+(\d+(?:\.\d+)?)'],
+        "platelets": [r'platelets\s+(?:count\s+)?is\s+(\d+(?:\.\d+)?)'],
+        "cholesterol": [r'cholesterol\s+is\s+(\d+(?:\.\d+)?)', r'total\s+cholesterol\s+is\s+(\d+(?:\.\d+)?)'],
+        "hdl": [r'hdl\s+is\s+(\d+(?:\.\d+)?)', r'high\s+density\s+lipoprotein\s+is\s+(\d+(?:\.\d+)?)'],
+        "ldl": [r'ldl\s+is\s+(\d+(?:\.\d+)?)', r'low\s+density\s+lipoprotein\s+is\s+(\d+(?:\.\d+)?)'],
+        "triglycerides": [r'triglycerides\s+is\s+(\d+(?:\.\d+)?)'],
+        "a1c": [r'a1c\s+is\s+(\d+(?:\.\d+)?)', r'hba1c\s+is\s+(\d+(?:\.\d+)?)', r'hemoglobin\s+a1c\s+is\s+(\d+(?:\.\d+)?)'],
+        "tsh": [r'tsh\s+is\s+(\d+(?:\.\d+)?)', r'thyroid\s+stimulating\s+hormone\s+is\s+(\d+(?:\.\d+)?)'],
+        "vitamin d": [r'vitamin\s+d\s+is\s+(\d+(?:\.\d+)?)', r'25-hydroxyvitamin\s+d\s+is\s+(\d+(?:\.\d+)?)'],
+        "iron": [r'iron\s+is\s+(\d+(?:\.\d+)?)']
+    }
     
-    # Extract BUN values
-    if "bun" in test_analysis.lower() or "blood urea nitrogen" in test_analysis.lower():
-        bun_match = re.search(r'bun\s+is\s+(\d+)', test_analysis.lower())
-        if not bun_match:
-            bun_match = re.search(r'blood urea nitrogen\s+is\s+(\d+)', test_analysis.lower())
+    # Extract values using patterns
+    for test, patterns in test_patterns.items():
+        for pattern in patterns:
+            match = re.search(pattern, test_analysis.lower())
+            if match:
+                test_info[test] = float(match.group(1))
+                break
+    
+    # If patterns don't match, try to find numbers near test names
+    if not test_info:
+        words = test_analysis.split()
+        for i, word in enumerate(words):
+            if word.lower() in test_patterns and i+1 < len(words) and words[i+1].replace('.', '', 1).isdigit():
+                test_info[word.lower()] = float(words[i+1])
+    
+    return test_info
+
+def generate_test_summary(test_info):
+    """Generate a summary of all test results"""
+    if not test_info:
+        return "I don't see any specific test values in the information provided. Please share your test results or ask about a specific test."
+    
+    summary = "Here's a summary of your test results:\n\n"
+    
+    # Reference ranges and interpretations
+    reference_ranges = {
+        "glucose": {
+            "range": "70-99 mg/dL (fasting)",
+            "low": "below 70 mg/dL - hypoglycemia (low blood sugar)",
+            "normal": "70-99 mg/dL - normal fasting glucose",
+            "high_1": "100-125 mg/dL - prediabetes (when fasting)",
+            "high_2": "126 mg/dL or higher - may indicate diabetes (when fasting)"
+        },
+        "bun": {
+            "range": "7-20 mg/dL",
+            "low": "below 7 mg/dL - may indicate liver disease, malnutrition, or overhydration",
+            "normal": "7-20 mg/dL - normal kidney function",
+            "high": "above 20 mg/dL - may indicate reduced kidney function, dehydration, or high protein diet"
+        },
+        "creatinine": {
+            "range": "0.7-1.3 mg/dL (men), 0.6-1.1 mg/dL (women)",
+            "low": "below range - may indicate decreased muscle mass",
+            "normal": "within range - normal kidney function",
+            "high": "above range - may indicate kidney problems"
+        },
+        "cholesterol": {
+            "range": "below 200 mg/dL",
+            "normal": "below 200 mg/dL - desirable",
+            "high_1": "200-239 mg/dL - borderline high",
+            "high_2": "240 mg/dL or higher - high"
+        },
+        "hdl": {
+            "range": "above 40 mg/dL (men), above 50 mg/dL (women)",
+            "low": "below range - increased heart disease risk",
+            "normal": "within range - acceptable",
+            "high": "60 mg/dL or higher - considered protective against heart disease"
+        },
+        "ldl": {
+            "range": "below 100 mg/dL",
+            "normal": "below 100 mg/dL - optimal",
+            "high_1": "100-129 mg/dL - near optimal",
+            "high_2": "130-159 mg/dL - borderline high",
+            "high_3": "160-189 mg/dL - high",
+            "high_4": "190 mg/dL or higher - very high"
+        },
+        "triglycerides": {
+            "range": "below 150 mg/dL",
+            "normal": "below 150 mg/dL - normal",
+            "high_1": "150-199 mg/dL - borderline high",
+            "high_2": "200-499 mg/dL - high",
+            "high_3": "500 mg/dL or higher - very high"
+        }
+    }
+    
+    # Add each test result to the summary
+    for test, value in test_info.items():
+        summary += f"• {test.upper()}: {value} "
         
-        if bun_match:
-            test_info["bun"] = int(bun_match.group(1))
+        if test in reference_ranges:
+            summary += f"({reference_ranges[test]['range']})\n"
+            
+            # Add interpretation based on value
+            if test == "glucose":
+                if value < 70:
+                    summary += f"  - {reference_ranges[test]['low']}\n"
+                elif 70 <= value <= 99:
+                    summary += f"  - {reference_ranges[test]['normal']}\n"
+                elif 100 <= value <= 125:
+                    summary += f"  - {reference_ranges[test]['high_1']}\n"
+                else:
+                    summary += f"  - {reference_ranges[test]['high_2']}\n"
+            elif test == "bun":
+                if value < 7:
+                    summary += f"  - {reference_ranges[test]['low']}\n"
+                elif 7 <= value <= 20:
+                    summary += f"  - {reference_ranges[test]['normal']}\n"
+                else:
+                    summary += f"  - {reference_ranges[test]['high']}\n"
+            elif test == "creatinine":
+                # Using general range without gender specificity
+                if value < 0.6:
+                    summary += f"  - {reference_ranges[test]['low']}\n"
+                elif 0.6 <= value <= 1.3:
+                    summary += f"  - {reference_ranges[test]['normal']}\n"
+                else:
+                    summary += f"  - {reference_ranges[test]['high']}\n"
+            elif test == "cholesterol":
+                if value < 200:
+                    summary += f"  - {reference_ranges[test]['normal']}\n"
+                elif 200 <= value <= 239:
+                    summary += f"  - {reference_ranges[test]['high_1']}\n"
+                else:
+                    summary += f"  - {reference_ranges[test]['high_2']}\n"
         else:
-            # Try to find any number near BUN
-            for word in test_analysis.split():
-                if word.isdigit() and ("bun" in test_analysis.lower().split(word)[0][-10:] or 
-                                      "blood urea nitrogen" in test_analysis.lower().split(word)[0][-30:]):
-                    test_info["bun"] = int(word)
-                    break
+            summary += "(no reference range available)\n"
+    
+    summary += "\nWould you like more detailed information about any specific test?"
+    return summary
+
+def generate_mock_response(test_analysis, user_input):
+    """Generate a mock response based on the test analysis and user input"""
+    # Extract all test values
+    test_info = extract_test_values(test_analysis)
+    
+    # Check if user is asking for a general summary of results
+    general_summary_patterns = [
+        r'tell me about my (?:test )?results',
+        r'explain my (?:test )?results',
+        r'what do my (?:test )?results mean',
+        r'summarize my (?:test )?results',
+        r'overview of my (?:test )?results',
+        r'interpret my (?:test )?results'
+    ]
+    
+    for pattern in general_summary_patterns:
+        if re.search(pattern, user_input.lower()):
+            return generate_test_summary(test_info)
     
     # Check if the user is asking about BUN
     if "bun" in user_input.lower() or "blood urea nitrogen" in user_input.lower():
@@ -101,6 +233,26 @@ def generate_mock_response(test_analysis, user_input):
                 return f"Your blood glucose level of {glucose} mg/dL is in the prediabetic range (100-125 mg/dL when fasting). This suggests you may have prediabetes, a condition where blood sugar is higher than normal but not high enough to be diagnosed as diabetes. I recommend discussing this with your healthcare provider."
             else:
                 return f"Your blood glucose level of {glucose} mg/dL is above the normal range and may indicate diabetes (≥126 mg/dL when fasting). I recommend consulting with your healthcare provider for proper diagnosis and treatment."
+    
+    # Check for cholesterol questions
+    if "cholesterol" in user_input.lower() and "cholesterol" in test_info:
+        cholesterol = test_info["cholesterol"]
+        if cholesterol < 200:
+            return f"Your total cholesterol level of {cholesterol} mg/dL is within the desirable range (below 200 mg/dL). This is good for your heart health."
+        elif 200 <= cholesterol <= 239:
+            return f"Your total cholesterol level of {cholesterol} mg/dL is borderline high (200-239 mg/dL). Consider lifestyle changes like diet and exercise to lower it."
+        else:
+            return f"Your total cholesterol level of {cholesterol} mg/dL is high (240 mg/dL or higher). This increases your risk for heart disease and stroke. I recommend discussing treatment options with your healthcare provider."
+    
+    # Check for creatinine questions
+    if "creatinine" in user_input.lower() and "creatinine" in test_info:
+        creatinine = test_info["creatinine"]
+        if creatinine < 0.6:
+            return f"Your creatinine level of {creatinine} mg/dL is below the typical range. Low creatinine can be associated with decreased muscle mass or sometimes liver disease. Please consult with your healthcare provider for proper interpretation."
+        elif 0.6 <= creatinine <= 1.3:
+            return f"Your creatinine level of {creatinine} mg/dL is within the normal range (0.6-1.3 mg/dL). Creatinine is a waste product from muscle metabolism that's filtered by your kidneys. A normal level suggests your kidneys are functioning properly."
+        else:
+            return f"Your creatinine level of {creatinine} mg/dL is above the normal range. Elevated creatinine can indicate kidney problems, as it suggests your kidneys aren't filtering waste effectively. I recommend discussing this with your healthcare provider."
     
     # Common blood test explanations
     blood_test_explanations = {
@@ -158,13 +310,9 @@ def generate_mock_response(test_analysis, user_input):
 
 def generate_response(test_analysis, conversation, user_input):
     try:
-        # First try to use the mock response generator
-        try:
-            return generate_mock_response(test_analysis, user_input)
-        except Exception as mock_error:
-            print(f"Error generating mock response: {str(mock_error)}", file=sys.stderr)
+        # First try to use the Gemini 1.5 Flash model
+        print(f"Attempting to use Gemini 1.5 Flash model first...", file=sys.stderr)
         
-        # If mock response fails, try the API with only gemini-1.5-flash
         # Create the prompt for the AI
         prompt = f"""
         You are a helpful medical assistant chatbot that can answer questions about blood test results.
@@ -182,19 +330,27 @@ def generate_response(test_analysis, conversation, user_input):
         AI:
         """
         
-        # Only try gemini-1.5-flash since it's the one that works
         try:
-            print(f"Trying model: gemini-1.5-flash", file=sys.stderr)
             model = genai.GenerativeModel("gemini-1.5-flash")
             response = model.generate_content(prompt)
-            print(f"Successfully used model: gemini-1.5-flash", file=sys.stderr)
-            return response.text
+            print(f"Successfully used Gemini 1.5 Flash model", file=sys.stderr)
+            print(f"Gemini response: {response.text[:100]}...", file=sys.stderr)
+            return "[Gemini 1.5 Flash] " + response.text
         except Exception as e:
-            print(f"Error with model gemini-1.5-flash: {str(e)}", file=sys.stderr)
-            # If API fails, fall back to the default response
-            return "I'm here to help you understand your blood test results. Based on the information provided, I can see some basic test data. If you have specific questions about particular values or tests, please let me know which ones you're interested in."
+            print(f"Error with Gemini 1.5 Flash model: {str(e)}", file=sys.stderr)
+            print(f"Falling back to mock response generator...", file=sys.stderr)
+            
+            # If API fails, fall back to the mock response generator
+            try:
+                mock_response = generate_mock_response(test_analysis, user_input)
+                print(f"Successfully generated mock response", file=sys.stderr)
+                print(f"Mock response: {mock_response[:100]}...", file=sys.stderr)
+                return "[Mock Response] " + mock_response
+            except Exception as mock_error:
+                print(f"Error generating mock response: {str(mock_error)}", file=sys.stderr)
+                return "I'm sorry, I encountered an error while processing your question. Please try again or contact support with error code: RESP-ERR."
     except Exception as e:
-        print(f"Error generating response: {str(e)}", file=sys.stderr)
+        print(f"Error in generate_response: {str(e)}", file=sys.stderr)
         return "I'm sorry, I encountered an error while processing your question. Please try again or contact support with error code: MODEL-ERR."
 
 if __name__ == "__main__":
