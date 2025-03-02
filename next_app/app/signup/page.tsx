@@ -12,7 +12,6 @@ export default function Signup() {
     const [age, setAge] = useState("");
     const [gender, setGender] = useState("");
     const [diseases, setDiseases] = useState("");
-    const [healthInfo, setHealthInfo] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -53,7 +52,6 @@ export default function Signup() {
                 body: JSON.stringify({ 
                     username, 
                     password,
-                    health_info: healthInfo,
                     age,
                     gender,
                     diseases
@@ -181,7 +179,7 @@ export default function Signup() {
                                 </select>
                             </div>
                             
-                            <div className="mb-4">
+                            <div className="mb-6">
                                 <label className="block text-gray-700 text-sm font-mono mb-2" htmlFor="diseases">
                                     Medical Conditions
                                 </label>
@@ -189,23 +187,9 @@ export default function Signup() {
                                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
                                     id="diseases" 
                                     placeholder="Enter any medical conditions or diseases..."
-                                    rows={3}
+                                    rows={4}
                                     value={diseases}
                                     onChange={(e) => setDiseases(e.target.value)}
-                                />
-                            </div>
-                            
-                            <div className="mb-6">
-                                <label className="block text-gray-700 text-sm font-mono mb-2" htmlFor="healthInfo">
-                                    Additional Health Information
-                                </label>
-                                <textarea 
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-                                    id="healthInfo" 
-                                    placeholder="Enter any additional health information..."
-                                    rows={3}
-                                    value={healthInfo}
-                                    onChange={(e) => setHealthInfo(e.target.value)}
                                 />
                             </div>
                             

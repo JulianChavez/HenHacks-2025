@@ -19,13 +19,13 @@ export async function POST(request: Request) {
     // Query the database for the client using the clients table
     // IMPORTANT: In a production environment, passwords should be hashed
     // This is a simplified example for demonstration purposes
-    const [rows] = await pool.query(
+    const [clientRows] = await pool.query(
       'SELECT * FROM clients WHERE username = ? AND password = ?',
       [username, password]
     );
 
     // Check if client exists
-    const clients = rows as any[];
+    const clients = clientRows as any[];
     if (clients.length === 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid username or password' },
@@ -38,6 +38,27 @@ export async function POST(request: Request) {
     
     // Don't send the password back to the client
     delete client.password;
+    
+    // Get user health information from userinformation table
+    try {
+      const [userInfoRows] = await pool.query(
+        'SELECT age, gender, diseases FROM userinformation WHERE client_id = ?',
+        [client.client_id]
+      );
+      
+      const userInfo = userInfoRows as any[];
+      if (userInfo.length > 0) {
+        // Add health information to the client object
+        client.health_info = {
+          age: userInfo[0].age,
+          gender: userInfo[0].gender,
+          diseases: userInfo[0].diseases
+        };
+      }
+    } catch (infoError) {
+      console.error('Error fetching user health information:', infoError);
+      // Continue even if we can't get health info
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Report } from "./ReportList";
 
 interface ReportUploadProps {
@@ -17,6 +17,24 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
     const [analysisResults, setAnalysisResults] = useState<string | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [fileUrl, setFileUrl] = useState("");
+    const [clientId, setClientId] = useState<number | null>(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    // Check if user is logged in on component mount
+    useEffect(() => {
+        const clientData = localStorage.getItem("client");
+        if (clientData) {
+            try {
+                const client = JSON.parse(clientData);
+                if (client && client.client_id) {
+                    setClientId(client.client_id);
+                    setIsLoggedIn(true);
+                }
+            } catch (error) {
+                console.error("Error parsing client data:", error);
+            }
+        }
+    }, []);
 
     // Generate a random report number
     const generateReportNumber = () => {
@@ -49,6 +67,11 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                 formData.append("reportDate", reportDate);
                 formData.append("reportNumber", newReportNumber);
                 
+                // Add client_id if available
+                if (clientId) {
+                    formData.append("client_id", clientId.toString());
+                }
+                
                 // Send the file to the API route
                 const response = await fetch("/api/upload", {
                     method: "POST",
@@ -61,7 +84,6 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                 
                 const data = await response.json();
                 console.log("Upload successful:", data);
-                console.log("HELLLO");
                 
                 // Store the analysis results if available
                 let analysisText = null;
@@ -78,6 +100,33 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                     
                     setAnalysisResults(analysisText || "No analysis available");
                     setUploadStatus("Upload and analysis successful!");
+                    
+                    // Save results to the report table if client is logged in
+                    if (clientId && analysisText) {
+                        try {
+                            const saveResponse = await fetch("/api/save-report", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                    client_id: clientId,
+                                    title: reportName,
+                                    file_url: data.fileUrl,
+                                    report_number: newReportNumber,
+                                    analysis_results: analysisText
+                                }),
+                            });
+                            
+                            if (saveResponse.ok) {
+                                console.log("Results saved to report table");
+                            } else {
+                                console.error("Failed to save results to report table");
+                            }
+                        } catch (saveError) {
+                            console.error("Error saving results:", saveError);
+                        }
+                    }
                 } else if (data.analysisError) {
                     console.log("Analysis error:", data.analysisError);
                     setAnalysisResults("Analysis failed: " + data.analysisError);
@@ -97,7 +146,8 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                         ReportDate: reportDate,
                         ReportNumber: newReportNumber,
                         fileUrl: data.fileUrl,
-                        analysisResults: analysisText
+                        analysisResults: analysisText,
+                        client_id: clientId
                     };
                     onReportUploaded(newReport);
                 }
@@ -116,7 +166,14 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
         <div className="upload-container">
             <h1 className="text-xl font-bold mb-4">Bloodwork Upload</h1>
             
-            {!isUploaded ? (
+            {!isLoggedIn ? (
+                <div className="p-4 bg-yellow-100 border border-yellow-400 rounded-md">
+                    <p className="text-yellow-700">Please log in to save your reports to your account.</p>
+                    <a href="/login" className="mt-2 inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                        Log In
+                    </a>
+                </div>
+            ) : !isUploaded ? (
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="form-group">
                         <label htmlFor="reportName" className="block text-sm font-medium mb-1">
@@ -207,6 +264,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                                 <div className="mt-2">
                                     <p><strong>Report Number:</strong> {reportNumber}</p>
                                     <p><strong>File Path:</strong> {fileUrl}</p>
+                                    <p><strong>Client ID:</strong> {clientId || "Not logged in"}</p>
                                     <p><strong>Raw Analysis Results:</strong></p>
                                     <pre className="bg-gray-100 p-2 rounded text-xs overflow-auto max-h-60">
                                         {JSON.stringify(analysisResults, null, 2)}

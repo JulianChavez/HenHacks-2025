@@ -3,7 +3,7 @@ import { connectToDB } from '@/app/lib/db';
 
 export async function POST(request: Request) {
   try {
-    const { username, password, health_info, age, gender, diseases } = await request.json();
+    const { username, password, age, gender, diseases } = await request.json();
 
     // Validate input
     if (!username || !password) {
@@ -34,11 +34,11 @@ export async function POST(request: Request) {
     await pool.query('START TRANSACTION');
     
     try {
-      // Insert the new user into the clients table
+      // Insert the new user into the clients table (without health_info)
       // IMPORTANT: In a production environment, passwords should be hashed
       const [clientResult] = await pool.query(
-        'INSERT INTO clients (username, password, health_info) VALUES (?, ?, ?)',
-        [username, password, health_info || null]
+        'INSERT INTO clients (username, password) VALUES (?, ?)',
+        [username, password]
       );
       
       const insertResult = clientResult as any;

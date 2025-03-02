@@ -1,36 +1,45 @@
 -- Create clients table if it doesn't exist
 CREATE TABLE IF NOT EXISTS clients (
-    client_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    health_info TEXT
+    client_id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
 );
--- Insert sample clients (in a real application, passwords should be hashed)
--- Only run these if the clients don't already exist
-INSERT IGNORE INTO clients (username, password, health_info)
-VALUES (
-        'admin',
-        'admin123',
-        'Administrator account with no health information'
-    ),
-    (
-        'doctor',
-        'doctor123',
-        'Doctor account with access to patient records'
-    ),
-    (
-        'patient1',
-        'patient123',
-        'Patient with history of hypertension and diabetes'
-    ),
-    (
-        'test',
-        'test123',
-        'Test account for development purposes'
-    );
--- Create a view to see clients without passwords (for security)
+-- Create userinformation table if it doesn't exist
+CREATE TABLE IF NOT EXISTS userinformation (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    client_id INT NOT NULL,
+    age INT,
+    gender VARCHAR(50),
+    diseases TEXT,
+    FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE
+);
+-- Create reports table if it doesn't exist
+CREATE TABLE IF NOT EXISTS reports (
+    report_id INT PRIMARY KEY AUTO_INCREMENT,
+    client_id INT,
+    title VARCHAR(255) NOT NULL,
+    file_url VARCHAR(255) NOT NULL,
+    upload_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    analysis_results TEXT,
+    FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE
+    SET NULL
+);
+-- Insert sample clients (if they don't already exist)
+INSERT IGNORE INTO clients (username, password)
+VALUES ('admin', 'admin123'),
+    ('doctor', 'doctor123'),
+    ('patient', 'patient123');
+-- Insert sample user information
+INSERT IGNORE INTO userinformation (client_id, age, gender, diseases)
+VALUES (1, 35, 'Male', 'None'),
+    (2, 42, 'Female', 'None'),
+    (3, 28, 'Male', 'Diabetes, Hypertension');
+-- Create a view to display client information without passwords
 CREATE OR REPLACE VIEW client_info AS
-SELECT client_id,
-    username,
-    health_info
-FROM clients;
+SELECT c.client_id,
+    c.username,
+    u.age,
+    u.gender,
+    u.diseases
+FROM clients c
+    LEFT JOIN userinformation u ON c.client_id = u.client_id;
