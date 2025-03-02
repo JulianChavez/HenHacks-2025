@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { Report } from "./ReportList";
-import axios from "axios";
 import "../report.css";
 
 interface ReportUploadProps {
