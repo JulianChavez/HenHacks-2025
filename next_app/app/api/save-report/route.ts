@@ -3,7 +3,7 @@ import { connectToDB } from '@/app/lib/db';
 
 export async function POST(request: Request) {
   try {
-    const { client_id, title, file_url, analysis_results } = await request.json();
+    const { client_id, title, file_url, analysis_results, report_number } = await request.json();
 
     // Validate input
     if (!client_id) {
@@ -17,17 +17,18 @@ export async function POST(request: Request) {
     const pool = await connectToDB();
     
     // Generate a report number if not provided
-    const reportNumber = `RPT-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)}`;
+    const reportNumber = report_number || Math.floor(Math.random() * 1000000);
+    const reportDate = new Date().toISOString().split('T')[0];
     
     // Insert the report into the report table
     const [result] = await pool.query(
-      'INSERT INTO report (client_id, title, file_url, report_number, analysis_results) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO report (client_id, results, report_number, report_date, report_name) VALUES (?, ?, ?, ?, ?)',
       [
         client_id, 
-        title || 'Blood Test Report', 
-        file_url || '', 
+        analysis_results || '', 
         reportNumber,
-        analysis_results || ''
+        reportDate,
+        title || 'Blood Test Report'
       ]
     );
     

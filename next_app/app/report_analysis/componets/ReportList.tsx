@@ -65,11 +65,11 @@ export default function ReportList({ reports = [], onDeleteReport, onViewDetails
                         if (data.reports && Array.isArray(data.reports)) {
                             // Convert database reports to the Report format
                             const dbReports = data.reports.map((report: any) => ({
-                                ReportName: report.title || `Report ${report.report_id}`,
-                                ReportDate: new Date(report.upload_date || Date.now()).toISOString().split('T')[0],
-                                ReportNumber: report.report_number || `DB-${report.report_id}`,
-                                fileUrl: report.file_url,
-                                analysisResults: report.analysis_results || report.results,
+                                ReportName: report.report_name || `Report ${report.id || 'Unknown'}`,
+                                ReportDate: report.report_date || new Date().toISOString().split('T')[0],
+                                ReportNumber: report.report_number ? report.report_number.toString() : `DB-${report.id || Date.now()}`,
+                                fileUrl: report.file_url || '',
+                                analysisResults: report.results || '',
                                 client_id: report.client_id
                             }));
                             

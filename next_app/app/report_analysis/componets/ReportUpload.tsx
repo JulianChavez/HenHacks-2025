@@ -112,9 +112,8 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                                 body: JSON.stringify({
                                     client_id: clientId,
                                     title: reportName,
-                                    file_url: data.fileUrl,
-                                    report_number: newReportNumber,
-                                    analysis_results: analysisText
+                                    analysis_results: analysisText,
+                                    report_number: parseInt(newReportNumber.replace(/\D/g, '')) || Math.floor(Math.random() * 1000000)
                                 }),
                             });
                             
