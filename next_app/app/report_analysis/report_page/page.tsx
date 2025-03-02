@@ -31,7 +31,7 @@ const parseAnalysisResults = (analysisResults: string | undefined) => {
         }
         
         // Extract recommendations
-        const recommendationsMatch = analysisResults.match(/Recommendations:([\s\S]*?)(?=Test Results:|$)/);
+        const recommendationsMatch = analysisResults.match(/Recommendations:([\s\S]*?)(?=Blood Test Breakdown:|$)/);
         if (recommendationsMatch && recommendationsMatch[1]) {
             recommendations = recommendationsMatch[1].trim();
         }

@@ -264,7 +264,7 @@ def analyze_bloodwork(file_path):
 
         Test Name	| Result	| Reference Range	| Notes
         
-        Ensure your response is clear, concise, and medically informative. If age, gender, or health conditions are provided, tailor your recommendations accordingly. Avoid making definitive diagnoses and always suggest consulting a healthcare provider if needed.
+        Ensure your response is clear, concise, and medically informative. Exclude any ** or boldness in your response. If age, gender, or health conditions are provided, tailor your recommendations accordingly. Avoid making definitive diagnoses and always suggest consulting a healthcare provider if needed.
         """
 
         model = genai.GenerativeModel("gemini-1.5-pro")
