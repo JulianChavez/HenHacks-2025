@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div className="relative min-h-screen bg-black text-black overflow-hidden font-mono">
       {/* Updated Background Image */}
-      <div className="absolute inset-0 bg-black before:content-[''] before:absolute before:inset-0 before:bg-[url('/vertical-gradient-2.png')] before:bg-cover before:bg-center before:opacity-70">
+      <div className="absolute inset-0 bg-black before:content-[''] before:absolute before:inset-0 before:bg-[url('/vertical-gradient-2.png')] before:bg-cover before:bg-center before:opacity-100">
       </div>
 
       <div id="header" className="relative rounded-box p-4 bg-opacity-90 bg-gray-400 z-10">
@@ -61,7 +61,7 @@ export default function Home() {
                   className="w-48 h-48 rounded-full object-cover shadow-lg shadow-gray-700 transition-transform transform group-hover:scale-110 group-hover:shadow-xl"
                 />
                 <h3 className="mt-4 font-semibold text-lg">{member.name}</h3>
-                <p className="text-black">{member.role}</p>
+                <p className="text-white">{member.role}</p>
               </div>
           ))}
         </div>
