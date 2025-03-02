@@ -13,7 +13,17 @@ CREATE TABLE IF NOT EXISTS userinformation (
     diseases TEXT,
     FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE
 );
--- Create reports table if it doesn't exist
+-- Create report table if it doesn't exist
+CREATE TABLE IF NOT EXISTS report (
+    report_ID INT PRIMARY KEY AUTO_INCREMENT,
+    client_id INT,
+    results TEXT,
+    report_number INT,
+    report_date VARCHAR(255),
+    report_name TEXT,
+    FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE
+);
+-- Create reports table if it doesn't exist (legacy - keeping for backward compatibility)
 CREATE TABLE IF NOT EXISTS reports (
     report_id INT PRIMARY KEY AUTO_INCREMENT,
     client_id INT,

@@ -3,7 +3,7 @@ import { connectToDB } from '@/app/lib/db';
 
 export async function POST(request: Request) {
   try {
-    const { client_id, title, file_url, analysis_results, report_number } = await request.json();
+    const { client_id, title, file_url, analysis_results, report_number, report_ID } = await request.json();
 
     // Validate input
     if (!client_id) {
@@ -21,24 +21,28 @@ export async function POST(request: Request) {
     const reportDate = new Date().toISOString().split('T')[0];
     
     // Insert the report into the report table
-    const [result] = await pool.query(
-      'INSERT INTO report (client_id, results, report_number, report_date, report_name) VALUES (?, ?, ?, ?, ?)',
-      [
-        client_id, 
-        analysis_results || '', 
-        reportNumber,
-        reportDate,
-        title || 'Blood Test Report'
-      ]
-    );
+    let query = 'INSERT INTO report (client_id, results, report_number, report_date, report_name';
+    let values = [client_id, analysis_results || '', reportNumber, reportDate, title || 'Blood Test Report'];
+    let placeholders = '?, ?, ?, ?, ?';
+    
+    // If report_ID is provided, include it in the query
+    if (report_ID) {
+      query += ', report_ID';
+      placeholders += ', ?';
+      values.push(report_ID);
+    }
+    
+    query += ') VALUES (' + placeholders + ')';
+    
+    const [result] = await pool.query(query, values);
     
     const insertResult = result as any;
     
-    // Return success response
+    // Return success response with the report_ID
     return NextResponse.json({
       success: true,
       message: 'Report saved successfully',
-      report_id: insertResult.insertId,
+      report_ID: report_ID || insertResult.insertId,
       report_number: reportNumber
     });
   } catch (error) {

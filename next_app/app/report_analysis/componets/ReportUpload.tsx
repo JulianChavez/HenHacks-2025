@@ -104,6 +104,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                     // Save results to the report table if client is logged in
                     if (clientId && analysisText) {
                         try {
+                            let reportId: number | undefined;
                             const saveResponse = await fetch("/api/save-report", {
                                 method: "POST",
                                 headers: {
@@ -119,40 +120,75 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                             
                             if (saveResponse.ok) {
                                 console.log("Results saved to report table");
+                                // Get the report_ID from the response
+                                const saveData = await saveResponse.json();
+                                if (saveData.report_ID) {
+                                    console.log("Report ID:", saveData.report_ID);
+                                    reportId = saveData.report_ID;
+                                }
                             } else {
                                 console.error("Failed to save results to report table");
                             }
-                        } catch (saveError) {
-                            console.error("Error saving results:", saveError);
+
+                            // Call the onReportUploaded callback if provided
+                            if (onReportUploaded) {
+                                const newReport: Report = {
+                                    ReportName: reportName,
+                                    ReportDate: reportDate,
+                                    ReportNumber: newReportNumber,
+                                    fileUrl: data.fileUrl,
+                                    analysisResults: analysisText,
+                                    client_id: clientId,
+                                    report_ID: reportId
+                                };
+                                
+                                // Store the new report in local storage
+                                try {
+                                    const savedReports = localStorage.getItem('bloodwork_reports');
+                                    let reports: Report[] = [];
+                                    
+                                    if (savedReports) {
+                                        reports = JSON.parse(savedReports);
+                                    }
+                                    
+                                    // Add the new report if it doesn't already exist
+                                    const exists = reports.some(r => 
+                                        r.ReportNumber === newReport.ReportNumber || 
+                                        (r.fileUrl === newReport.fileUrl && r.client_id === newReport.client_id)
+                                    );
+                                    
+                                    if (!exists) {
+                                        reports.push(newReport);
+                                        localStorage.setItem('bloodwork_reports', JSON.stringify(reports));
+                                    }
+                                } catch (storageError) {
+                                    console.error("Error storing report in local storage:", storageError);
+                                }
+                                
+                                onReportUploaded(newReport);
+                            }
+                            
+                            setIsUploaded(true);
+                            setIsAnalyzing(false);
+                        } catch (error) {
+                            console.error("Error saving results:", error);
+                            setUploadStatus("Upload successful, but analysis failed.");
+                            setIsAnalyzing(false);
                         }
                     }
                 } else if (data.analysisError) {
                     console.log("Analysis error:", data.analysisError);
                     setAnalysisResults("Analysis failed: " + data.analysisError);
                     setUploadStatus("Upload successful, but analysis failed.");
+                    setIsAnalyzing(false);
                 } else {
                     console.log("No analysis results in response");
                     setUploadStatus("Upload successful!");
+                    setIsAnalyzing(false);
                 }
                 
                 // Set the file URL
                 setFileUrl(data.fileUrl || "");
-                
-                // Call the onReportUploaded callback if provided
-                if (onReportUploaded) {
-                    const newReport: Report = {
-                        ReportName: reportName,
-                        ReportDate: reportDate,
-                        ReportNumber: newReportNumber,
-                        fileUrl: data.fileUrl,
-                        analysisResults: analysisText,
-                        client_id: clientId
-                    };
-                    onReportUploaded(newReport);
-                }
-                
-                setIsUploaded(true);
-                setIsAnalyzing(false);
             } catch (error) {
                 console.error("Error uploading file:", error);
                 setUploadStatus("Upload failed. Please try again.");
