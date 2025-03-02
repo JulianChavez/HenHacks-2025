@@ -6,8 +6,7 @@
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  background-image: url('/Nelson.jpg'); 
 }
 
 body {
@@ -24,9 +23,7 @@ body {
   background-attachment: fixed;
   background-position: center top;
   background-size: 800px;
-  background: blue;
-  background: -webkit-linear-gradient(to left, black, rgb(224, 148, 33), blue, rgb(239, 17, 135) 800px);
-  background: linear-gradient(to left, black, blue, rgb(227, 94, 27), black 800px);
+  background-image: url('/Nelson.jpg'); 
 }
 
 a, button, select {
