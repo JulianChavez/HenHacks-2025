@@ -30,3 +30,29 @@
     padding-left: 85px;
 
 }
+
+.progress-container {
+  width: 256px; /* Same as w-64 in Tailwind */
+  height: 75px; /* Same as h-4 */
+  background-color: #cbcccf; /* Tailwind gray-200 */
+  border-radius: 9999px; /* Makes it rounded */
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #ee0c0c; /* Tailwind blue-500 */
+  width: 0%; /* Start at 0%, will be changed dynamically */
+  transition: width 1s ease-in-out;
+}
+
+.syringe-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300px; /* Scale image width to match the container */
+  height: 300px; /* Scale image height to match the container */
+  object-fit: contain; /* Make sure it covers the container */
+  opacity: .5;
+  z-index: 1; /* Ensure syringe image is on top of the progress bar */
+}

@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { Report } from "./ReportList";
+import axios from "axios";
+import "../report.css";
 
 interface ReportUploadProps {
     onReportUploaded?: (report: Report) => void;
@@ -19,6 +21,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
     const [fileUrl, setFileUrl] = useState("");
     const [clientId, setClientId] = useState<number | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [progress, setProgress] = useState(0);
 
     // Check if user is logged in on component mount
     useEffect(() => {
@@ -48,6 +51,7 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
             setSelectedFile(e.target.files[0]);
         }
     };
+    
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -197,6 +201,27 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
         }
     };
 
+
+    useEffect(() => {
+        if (isAnalyzing) {
+            setProgress(0); // Reset progress when analysis starts
+    
+            let interval = setInterval(() => {
+                setProgress((prevProgress) => {
+                    if (prevProgress >= 100) {
+                        clearInterval(interval);
+                        return 100;
+                    }
+                    return prevProgress + 5; // Adjust step size for speed
+                });
+            }, 500); // Adjust interval duration for smoother effect
+    
+            return () => clearInterval(interval); // Cleanup
+        } else {
+            setProgress(0); // Reset progress when analysis stops
+        }
+    }, [isAnalyzing]);
+
     return (
         <div className="upload-container">
             <h1 className="text-xl font-bold mb-4">Bloodwork Upload</h1>
@@ -259,6 +284,23 @@ export default function ReportUpload({ onReportUploaded }: ReportUploadProps) {
                     >
                         {isAnalyzing ? "Processing..." : "Upload Report"}
                     </button>
+
+                    {isAnalyzing && (
+                        <div className="w-full flex justify-center mt-4 relative">
+                            <div className="progress-container">
+                            <div 
+                                className="progress-bar"
+                                style={{ width: `${progress}%` }}  // Controls the progress bar width based on progress
+                            ></div>
+                            {/* Syringe Image Overlay */}
+                            <img 
+                                src="../../SyringeTransparent-removebg-preview.png" 
+                                alt="Syringe"
+                                className="syringe-image absolute top-0 left-0 w-full h-full"  // Positioning the syringe image over the progress bar
+                            />
+                            </div>
+                        </div>
+                        )}
                 </form>
             ) : (
                 <div className="success-message space-y-4">
