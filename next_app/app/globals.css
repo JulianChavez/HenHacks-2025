@@ -18,7 +18,7 @@ body {
 }
 
 a, button, select {
-  cursor: url('glove_cursor (1).png') 10 10, auto;
+  cursor: url('glove_cursor.png') 10 10, auto;
 }
 
 .rounded-box{
