@@ -14,6 +14,11 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  cursor: url('glove_cursor (1).png') 10 10, auto;
+}
+
+a, button, select {
+  cursor: url('glove_cursor (1).png') 10 10, auto;
 }
 
 .rounded-box{
